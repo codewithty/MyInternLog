@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct MyInternLogApp: App {
@@ -13,5 +14,6 @@ struct MyInternLogApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: [QuickNote.self, StudyItem.self])
     }
 }
