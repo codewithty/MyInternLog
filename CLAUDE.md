@@ -47,9 +47,15 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**Create `QuickNote` and `StudyItem` SwiftData models.**
+**Build the Study Queue feature.**
 
-Work only on what is needed for this milestone. Do not add features or abstractions beyond it.
+Completed:
+- QuickNote model
+- StudyItem model
+- Quick Notes feature
+
+Current focus:
+- Study Queue
 
 ## Development Philosophy
 
@@ -63,3 +69,60 @@ Work only on what is needed for this milestone. Do not add features or abstracti
 - `objectVersion = 77` — Xcode 16+
 - No Swift packages or third-party dependencies yet
 - `.xcuserstate` is gitignored; don't commit it
+
+
+Important Project Documents
+
+Before proposing architecture, features, or major changes, read:
+
+CLAUDE.md
+docs/MVP.md
+
+The MVP describes the long-term vision for MyInternLog.
+
+Do NOT attempt to build the full MVP at once.
+
+Always prioritize:
+
+Small focused milestones
+Beginner-friendly code
+Features needed before AFRL starts
+Working software over architecture discussions
+One feature at a time
+Current Project Status
+
+Completed:
+
+Project setup
+GitHub setup
+CLAUDE.md
+SwiftData models (QuickNote, StudyItem)
+Quick Notes feature
+SwiftData persistence verified
+
+Current Goal:
+Build the smallest useful version of MyInternLog before AFRL begins on June 22.
+
+Current MVP Priority Order:
+
+Quick Notes ✅
+Study Queue
+Tab Navigation
+Weekly Recaps
+Search
+
+Everything else should be considered future work unless explicitly requested.
+
+Development Workflow
+
+For every milestone:
+
+Explain the milestone
+Explain the files involved
+Explain why they are needed
+Wait for approval
+Make the changes
+Explain how to test
+Suggest a commit message
+
+Do not automatically start the next milestone after completion.
