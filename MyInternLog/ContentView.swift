@@ -20,6 +20,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Queue", systemImage: "checklist")
                 }
+
+            WeeklyRecapView()
+                .tabItem {
+                    Label("Recap", systemImage: "calendar")
+                }
         }
     }
 }
