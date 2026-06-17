@@ -10,11 +10,21 @@ import SwiftData
 
 struct ContentView: View {
     var body: some View {
-        QuickNoteListView()
+        TabView {
+            QuickNoteListView()
+                .tabItem {
+                    Label("Notes", systemImage: "note.text")
+                }
+
+            StudyQueueListView()
+                .tabItem {
+                    Label("Queue", systemImage: "checklist")
+                }
+        }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: QuickNote.self, inMemory: true)
+        .modelContainer(for: [QuickNote.self, StudyItem.self], inMemory: true)
 }
