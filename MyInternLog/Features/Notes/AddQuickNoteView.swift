@@ -7,6 +7,7 @@ struct AddQuickNoteView: View {
 
     @State private var title = ""
     @State private var noteBody = ""
+    @State private var selectedTag: NoteTag = .general
 
     var body: some View {
         NavigationStack {
@@ -14,6 +15,13 @@ struct AddQuickNoteView: View {
                 TextField("Title", text: $title)
                 TextField("Body (optional)", text: $noteBody, axis: .vertical)
                     .lineLimit(5...)
+                Section {
+                    Picker("Tag", selection: $selectedTag) {
+                        ForEach(NoteTag.allCases, id: \.self) { tag in
+                            Text(tag.rawValue.capitalized).tag(tag)
+                        }
+                    }
+                }
             }
             .navigationTitle("New Note")
             .navigationBarTitleDisplayMode(.inline)
@@ -23,7 +31,7 @@ struct AddQuickNoteView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let note = QuickNote(title: title, body: noteBody)
+                        let note = QuickNote(title: title, body: noteBody, tag: selectedTag)
                         context.insert(note)
                         dismiss()
                     }

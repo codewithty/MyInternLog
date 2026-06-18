@@ -3,7 +3,7 @@ import SwiftData
 
 // SwiftData can't persist enums directly, so we store the raw String
 // and convert via a computed property.
-enum NoteTag: String {
+enum NoteTag: String, CaseIterable {
     case general
     case question
     case win
