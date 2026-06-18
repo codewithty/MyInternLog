@@ -14,6 +14,6 @@ struct MyInternLogApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [QuickNote.self, StudyItem.self])
+        .modelContainer(for: [QuickNote.self, StudyItem.self, Reflection.self, ReflectionAnswer.self])
     }
 }

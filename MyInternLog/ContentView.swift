@@ -25,6 +25,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Recap", systemImage: "calendar")
                 }
+
+            ReflectionListView()
+                .tabItem {
+                    Label("Reflect", systemImage: "text.book.closed")
+                }
         }
     }
 }
