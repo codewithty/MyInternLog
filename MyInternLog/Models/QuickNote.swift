@@ -17,6 +17,7 @@ final class QuickNote {
     var body: String
     var dateCreated: Date
     var tagRawValue: String
+    @Relationship(deleteRule: .cascade) var attachments: [AttachmentItem]
 
     var tag: NoteTag {
         get { NoteTag(rawValue: tagRawValue) ?? .general }
@@ -29,5 +30,6 @@ final class QuickNote {
         self.body = body
         self.dateCreated = Date()
         self.tagRawValue = tag.rawValue
+        self.attachments = []
     }
 }
