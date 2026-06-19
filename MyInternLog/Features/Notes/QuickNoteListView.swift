@@ -17,6 +17,14 @@ struct QuickNoteListView: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
+                    if !note.attachments.isEmpty {
+                        Label(
+                            "\(note.attachments.count) photo\(note.attachments.count == 1 ? "" : "s")",
+                            systemImage: "photo"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
                 }
             }
             .overlay {
