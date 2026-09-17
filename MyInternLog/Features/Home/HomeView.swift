@@ -116,6 +116,7 @@ struct HomeView: View {
                     LaunchTile(title: "Export PDF", systemImage: "doc.richtext", color: .red)
                 }
             }
+            .buttonStyle(.plain)
             .padding(.horizontal)
         }
     }

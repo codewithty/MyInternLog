@@ -5,12 +5,17 @@ struct AddMilestoneView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    var defaultDate: Date = Date()
-
     @State private var title = ""
-    @State private var date = Date()
+    @State private var date: Date
     @State private var type: MilestoneType = .presentation
     @State private var notes = ""
+
+    // Seeds the date picker directly from the calendar's currently-viewed
+    // month, rather than relying on onAppear (which can race the sheet's
+    // presentation animation).
+    init(defaultDate: Date = Date()) {
+        _date = State(initialValue: defaultDate)
+    }
 
     var body: some View {
         NavigationStack {
@@ -27,7 +32,6 @@ struct AddMilestoneView: View {
             }
             .navigationTitle("New Milestone")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { date = defaultDate }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
