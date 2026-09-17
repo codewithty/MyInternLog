@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
 
     @AppStorage("appTheme") private var appThemeRawValue = AppTheme.system.rawValue
+    @AppStorage("requireDraftApproval") private var requireDraftApproval = false
     @State private var showingAbout = false
 
     private var profile: InternshipProfile {
@@ -46,6 +47,14 @@ struct SettingsView: View {
                     NavigationLink("Project Groups") {
                         ProjectGroupsListView()
                     }
+                }
+
+                Section {
+                    Toggle("Require approval before filling suggested drafts", isOn: $requireDraftApproval)
+                } header: {
+                    Text("Summary Draft Builder")
+                } footer: {
+                    Text("When off, \"Suggest Draft\" fills empty reflection prompts automatically from today's notes. When on, you review each suggestion first.")
                 }
 
                 Section {

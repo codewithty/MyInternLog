@@ -5,8 +5,14 @@ struct ReflectionDetailView: View {
     @Bindable var reflection: Reflection
     @Environment(\.modelContext) private var context
 
+    @Query private var allStudyItems: [StudyItem]
+    @AppStorage("requireDraftApproval") private var requireDraftApproval = false
+
     @State private var showingTemplateSwitchWarning = false
     @State private var pendingTemplate: ReflectionTemplate?
+    @State private var pendingSuggestions: [String: String] = [:]
+    @State private var approvedSuggestions: Set<String> = []
+    @State private var showingDraftApproval = false
 
     private var sortedAnswers: [ReflectionAnswer] {
         reflection.answers.sorted { $0.displayOrder < $1.displayOrder }
@@ -48,10 +54,17 @@ struct ReflectionDetailView: View {
                 } label: {
                     Label("Add Prompt", systemImage: "plus.circle")
                 }
+
+                Button {
+                    suggestDraft()
+                } label: {
+                    Label("Suggest Draft", systemImage: "wand.and.stars")
+                }
+                .disabled(todaysNotes.isEmpty)
             } header: {
                 Text("Prompts")
             } footer: {
-                Text("Swipe to remove a prompt, or tap its title to edit the wording.")
+                Text("Swipe to remove a prompt, or tap its title to edit the wording. \"Suggest Draft\" fills empty prompts from today's notes — no AI involved, and always editable.")
             }
 
             if let dailyLog = reflection.dailyLog {
@@ -100,6 +113,41 @@ struct ReflectionDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: { _ in
             Text("Some of your answered prompts aren't in the new template and will be removed. This can't be undone.")
+        }
+        .sheet(isPresented: $showingDraftApproval) {
+            DraftApprovalView(
+                suggestions: pendingSuggestions,
+                onApply: { approved in
+                    apply(suggestions: approved)
+                    showingDraftApproval = false
+                }
+            )
+        }
+    }
+
+    private func suggestDraft() {
+        let openStudyItems = allStudyItems.filter { !$0.isReviewed }
+        let suggestions = SummaryDraftBuilder.suggestions(for: sortedAnswers.map(\.promptText), notes: todaysNotes, openStudyItems: openStudyItems)
+
+        // Never overwrite something the user already wrote.
+        let emptyPromptSuggestions = suggestions.filter { promptText, _ in
+            reflection.answers.first { $0.promptText == promptText }?.answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? false
+        }
+
+        if requireDraftApproval {
+            pendingSuggestions = emptyPromptSuggestions
+            showingDraftApproval = true
+        } else {
+            apply(suggestions: emptyPromptSuggestions)
+        }
+    }
+
+    private func apply(suggestions: [String: String]) {
+        for answer in reflection.answers {
+            if let suggestion = suggestions[answer.promptText] {
+                answer.answerText = suggestion
+                answer.updatedAt = Date()
+            }
         }
     }
 
@@ -192,6 +240,46 @@ private struct MoodSlider: View {
                 get: { Double(value) },
                 set: { value = Int($0.rounded()) }
             ), in: 1...5, step: 1)
+        }
+    }
+}
+
+private struct DraftApprovalView: View {
+    let suggestions: [String: String]
+    let onApply: ([String: String]) -> Void
+
+    @State private var approved: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(Array(suggestions.keys).sorted(), id: \.self) { prompt in
+                    Section(prompt) {
+                        Text(suggestions[prompt] ?? "")
+                            .font(.callout)
+                        Toggle("Use this suggestion", isOn: Binding(
+                            get: { approved.contains(prompt) },
+                            set: { isOn in
+                                if isOn { approved.insert(prompt) } else { approved.remove(prompt) }
+                            }
+                        ))
+                    }
+                }
+            }
+            .navigationTitle("Review Suggestions")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { approved = Set(suggestions.keys) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Apply") {
+                        onApply(suggestions.filter { approved.contains($0.key) })
+                    }
+                }
+            }
         }
     }
 }
