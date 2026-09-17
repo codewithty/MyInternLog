@@ -115,6 +115,12 @@ struct HomeView: View {
                 NavigationLink(destination: PDFExportView()) {
                     LaunchTile(title: "Export PDF", systemImage: "doc.richtext", color: .red)
                 }
+                NavigationLink(destination: EndOfInternshipView()) {
+                    LaunchTile(title: "End of Internship", systemImage: "graduationcap.fill", color: .brown)
+                }
+                NavigationLink(destination: ProjectGroupsListView()) {
+                    LaunchTile(title: "Project Groups", systemImage: "folder.fill", color: .cyan)
+                }
             }
             .buttonStyle(.plain)
             .padding(.horizontal)

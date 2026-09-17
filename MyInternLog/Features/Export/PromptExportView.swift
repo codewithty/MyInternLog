@@ -8,12 +8,16 @@ struct PromptExportView: View {
     @Query(sort: \QuickNote.dateCreated, order: .reverse) private var allNotes: [QuickNote]
     @Query(sort: \Reflection.date, order: .reverse) private var allReflections: [Reflection]
 
-    @State private var outputType: CareerOutputType = .dailySummary
+    @State private var outputType: CareerOutputType
     @State private var targetRole = ""
     @State private var resumeStyle: ResumeBulletStyle = .beginner
     @State private var prompt = ""
     @State private var pastedResult = ""
     @State private var copied = false
+
+    init(initialType: CareerOutputType = .dailySummary) {
+        _outputType = State(initialValue: initialType)
+    }
 
     private var profile: InternshipProfile {
         InternshipProfile.current(in: context)
@@ -26,6 +30,8 @@ struct PromptExportView: View {
         case .weeklyRecap:
             let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
             return allNotes.filter { $0.dateCreated >= cutoff }
+        case .endOfInternshipSummary:
+            return allNotes
         default:
             return Array(allNotes.prefix(20))
         }
@@ -38,6 +44,8 @@ struct PromptExportView: View {
         case .weeklyRecap:
             let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
             return allReflections.filter { $0.date >= cutoff }
+        case .endOfInternshipSummary:
+            return allReflections
         default:
             return Array(allReflections.prefix(10))
         }

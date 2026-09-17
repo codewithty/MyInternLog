@@ -34,11 +34,16 @@ enum AIPromptBuilder {
         lines.append("")
         lines.append("Here are my raw notes and reflections:")
 
-        for note in notes.prefix(15) {
+        // The end-of-internship summary is meant to use everything available;
+        // other prompt types stay short so the copy/paste prompt is manageable.
+        let noteLimit = type == .endOfInternshipSummary ? notes.count : 15
+        let reflectionLimit = type == .endOfInternshipSummary ? reflections.count : 5
+
+        for note in notes.prefix(noteLimit) {
             let body = note.body.isEmpty ? "" : " — \(note.body)"
             lines.append("- \(note.title)\(body)")
         }
-        for reflection in reflections.prefix(5) {
+        for reflection in reflections.prefix(reflectionLimit) {
             for answer in reflection.answers where !answer.answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 lines.append("- \(answer.promptText): \(answer.answerText)")
             }
