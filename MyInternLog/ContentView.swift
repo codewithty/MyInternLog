@@ -30,6 +30,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Reflect", systemImage: "text.book.closed")
                 }
+
+            SearchView()
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
         }
     }
 }
