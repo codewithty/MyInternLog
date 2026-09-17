@@ -43,6 +43,9 @@ struct SettingsView: View {
                     NavigationLink("Reminders") {
                         RemindersView()
                     }
+                    NavigationLink("Project Groups") {
+                        ProjectGroupsListView()
+                    }
                 }
 
                 Section {
