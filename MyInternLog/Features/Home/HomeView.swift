@@ -106,6 +106,9 @@ struct HomeView: View {
                 NavigationLink(destination: WeeklyRecapView()) {
                     LaunchTile(title: "Weekly Recap", systemImage: "sparkles", color: .purple)
                 }
+                NavigationLink(destination: EntriesListView()) {
+                    LaunchTile(title: "Entries", systemImage: "archivebox.fill", color: .teal)
+                }
             }
             .padding(.horizontal)
         }
