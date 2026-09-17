@@ -32,6 +32,12 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink("Reminders") {
+                        RemindersView()
+                    }
+                }
+
+                Section {
                     Toggle("Use generic wording by default", isOn: bindingFor(\.useGenericWordingByDefault))
                 } header: {
                     Text("Privacy")
