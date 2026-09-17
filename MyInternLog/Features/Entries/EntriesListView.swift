@@ -109,5 +109,5 @@ private struct EntryRow: View {
 
 #Preview {
     EntriesListView()
-        .modelContainer(for: [DailyLog.self, QuickNote.self, Reflection.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }

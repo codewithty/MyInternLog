@@ -190,5 +190,5 @@ private struct LaunchTile: View {
 
 #Preview {
     HomeView()
-        .modelContainer(for: [QuickNote.self, Reflection.self, InternshipProfile.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }

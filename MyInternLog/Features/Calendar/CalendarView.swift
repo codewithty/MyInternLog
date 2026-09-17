@@ -196,5 +196,5 @@ private struct DayCell: View {
 
 #Preview {
     CalendarView()
-        .modelContainer(for: [DailyLog.self, Milestone.self, QuickNote.self, Reflection.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }

@@ -165,5 +165,5 @@ private struct StatRow: View {
 
 #Preview {
     WeeklyRecapView()
-        .modelContainer(for: [QuickNote.self, StudyItem.self, AttachmentItem.self, WeeklyRecap.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }

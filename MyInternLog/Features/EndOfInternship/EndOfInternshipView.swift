@@ -101,5 +101,5 @@ struct EndOfInternshipView: View {
 
 #Preview {
     EndOfInternshipView()
-        .modelContainer(for: [QuickNote.self, Reflection.self, StudyItem.self, CareerOutput.self, Milestone.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }

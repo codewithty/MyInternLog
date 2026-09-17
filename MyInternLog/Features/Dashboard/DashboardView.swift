@@ -184,5 +184,5 @@ private struct StatCard: View {
 
 #Preview {
     DashboardView()
-        .modelContainer(for: [QuickNote.self, Reflection.self, StudyItem.self, DailyLog.self], inMemory: true)
+        .modelContainer(SampleData.container)
 }
