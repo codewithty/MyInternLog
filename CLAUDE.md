@@ -47,15 +47,20 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**Build the Study Queue feature.**
+**Wire DailyLog through the rest of the app (Attachments/Gallery, Calendar, Dashboard).**
 
 Completed:
-- QuickNote model
-- StudyItem model
-- Quick Notes feature
+- QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem, DailyLog models
+- Quick Notes feature (with tags and photo attachments)
+- Study Queue feature
+- Tab navigation
+- Weekly Recap view
+- Daily Reflections feature
+- Photo import via PhotosPicker
+- DailyLog model linking QuickNote, Reflection, and AttachmentItem (one log per calendar date)
 
 Current focus:
-- Study Queue
+- Use DailyLog to power day-based views (Calendar, day detail, Dashboard stats)
 
 ## Development Philosophy
 
@@ -96,9 +101,15 @@ Completed:
 Project setup
 GitHub setup
 CLAUDE.md
-SwiftData models (QuickNote, StudyItem)
+SwiftData models (QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem, DailyLog)
 Quick Notes feature
 SwiftData persistence verified
+Study Queue feature
+Tab navigation
+Weekly Recap view
+Daily Reflections feature
+Photo import (PhotosPicker, library only)
+DailyLog linking (QuickNote, Reflection, AttachmentItem share one log per date)
 
 Current Goal:
 Build the smallest useful version of MyInternLog before AFRL begins on June 22.
@@ -106,9 +117,9 @@ Build the smallest useful version of MyInternLog before AFRL begins on June 22.
 Current MVP Priority Order:
 
 Quick Notes ✅
-Study Queue
-Tab Navigation
-Weekly Recaps
+Study Queue ✅
+Tab Navigation ✅
+Weekly Recaps ✅
 Search
 
 Everything else should be considered future work unless explicitly requested.
