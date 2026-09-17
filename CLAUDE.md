@@ -47,20 +47,27 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**Wire DailyLog through the rest of the app (Attachments/Gallery, Calendar, Dashboard).**
+**Add Tags/Skills/Project Groups, a local (non-AI) summary draft builder, and a real XCTest target.**
 
-Completed:
-- QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem, DailyLog models
-- Quick Notes feature (with tags and photo attachments)
-- Study Queue feature
-- Tab navigation
-- Weekly Recap view
-- Daily Reflections feature
-- Photo import via PhotosPicker
-- DailyLog model linking QuickNote, Reflection, and AttachmentItem (one log per calendar date)
+Completed (models): QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
+DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput.
 
-Current focus:
-- Use DailyLog to power day-based views (Calendar, day detail, Dashboard stats)
+Completed (features): Quick Notes, Study Queue, Weekly Recap, Daily Reflections, photo
+import, Search, Home dashboard (with quick capture + launch tiles), first-run Setup,
+Settings, About, Calendar/Milestones (custom month grid), Dashboard (streak/stats/chart),
+Gallery, Reminders & local notifications, Entries/Archive, AI prompt export + Career
+Outputs, PDF export (Core Text pagination, share sheet).
+
+Not yet done (tracked as backlog, deliberately deferred — see docs/MVP.md for full detail):
+- Tags / Skills-Tools-Concepts / Project Groups / Highlights as their own reusable,
+  cross-cutting models (today there's only a single `NoteTag` category per QuickNote)
+- Local (non-AI) summary draft builder that pre-fills reflection prompts from existing notes
+- End-of-internship summary screen
+- Sample/mock data for SwiftUI previews
+- A real XCTest target (needs to be added via Xcode's GUI — New Target > Unit Testing
+  Bundle — since hand-editing project.pbxproj to add a target is unsafe to do blind).
+  DashboardStats and DateHelpers are already written as pure, dependency-free functions
+  so they're ready to test once a target exists.
 
 ## Development Philosophy
 
@@ -101,7 +108,8 @@ Completed:
 Project setup
 GitHub setup
 CLAUDE.md
-SwiftData models (QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem, DailyLog)
+SwiftData models (QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
+DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput)
 Quick Notes feature
 SwiftData persistence verified
 Study Queue feature
@@ -110,9 +118,22 @@ Weekly Recap view
 Daily Reflections feature
 Photo import (PhotosPicker, library only)
 DailyLog linking (QuickNote, Reflection, AttachmentItem share one log per date)
+Search (notes, study items, reflections)
+First-run Setup flow (skippable) + Settings + About
+Home dashboard tab (quick capture, recent activity, launch tiles)
+Calendar/Milestones (custom month grid, day detail, milestone creation)
+Dashboard (streak, weekly entries, open study items, wins, 7-day chart)
+Gallery (attachment grid + zoomable viewer)
+Reminders & local notifications (off by default, permission requested on opt-in)
+Entries/Archive (grouped by week/month)
+AI prompt export (manual copy/paste) + Career Outputs
+PDF export (journal report, share sheet)
 
 Current Goal:
-Build the smallest useful version of MyInternLog before AFRL begins on June 22.
+Build the smallest useful version of MyInternLog before AFRL begins on June 22. That
+goal has been substantially exceeded in scope — nearly every major area from
+docs/MVP.md now has a working screen. Remaining backlog is listed under "Current
+Milestone" above.
 
 Current MVP Priority Order:
 
@@ -120,7 +141,7 @@ Quick Notes ✅
 Study Queue ✅
 Tab Navigation ✅
 Weekly Recaps ✅
-Search
+Search ✅
 
 Everything else should be considered future work unless explicitly requested.
 
