@@ -8,6 +8,7 @@ enum AIPromptBuilder {
     static func buildPrompt(
         type: CareerOutputType,
         targetRole: String,
+        resumeStyle: ResumeBulletStyle? = nil,
         notes: [QuickNote],
         reflections: [Reflection],
         profile: InternshipProfile,
@@ -26,6 +27,9 @@ enum AIPromptBuilder {
         lines.append("Context: \(context)")
         if !targetRole.isEmpty {
             lines.append("Target role/context: \(targetRole)")
+        }
+        if let resumeStyle {
+            lines.append("Bullet style: \(resumeStyle.label)")
         }
         lines.append("")
         lines.append("Here are my raw notes and reflections:")

@@ -13,6 +13,25 @@ struct CareerOutputListView: View {
         }
     }
 
+    private func groupedByRole(_ outputs: [CareerOutput]) -> [(role: String, outputs: [CareerOutput])] {
+        let roles = Set(outputs.map { $0.targetRole.isEmpty ? "General" : $0.targetRole })
+        return roles.sorted().map { role in
+            (role, outputs.filter { ($0.targetRole.isEmpty ? "General" : $0.targetRole) == role })
+        }
+    }
+
+    @ViewBuilder
+    private func rows(for outputs: [CareerOutput]) -> some View {
+        ForEach(outputs) { output in
+            CareerOutputRow(output: output)
+        }
+        .onDelete { offsets in
+            for index in offsets {
+                context.delete(outputs[index])
+            }
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -25,14 +44,15 @@ struct CareerOutputListView: View {
                 } else {
                     List {
                         ForEach(groupedByType, id: \.type) { group in
-                            Section(group.type.label) {
-                                ForEach(group.outputs) { output in
-                                    CareerOutputRow(output: output)
-                                }
-                                .onDelete { offsets in
-                                    for index in offsets {
-                                        context.delete(group.outputs[index])
+                            if group.type == .resumeBullet {
+                                ForEach(groupedByRole(group.outputs), id: \.role) { roleGroup in
+                                    Section("Resume Bullets — " + roleGroup.role) {
+                                        rows(for: roleGroup.outputs)
                                     }
+                                }
+                            } else {
+                                Section(group.type.label) {
+                                    rows(for: group.outputs)
                                 }
                             }
                         }

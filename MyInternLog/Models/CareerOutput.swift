@@ -1,6 +1,24 @@
 import Foundation
 import SwiftData
 
+enum ResumeBulletStyle: String, CaseIterable {
+    case technical
+    case star
+    case beginner
+    case federal
+    case linkedIn
+
+    var label: String {
+        switch self {
+        case .technical: return "Technical"
+        case .star: return "STAR"
+        case .beginner: return "Beginner/Student-Friendly"
+        case .federal: return "Federal/Government-Friendly"
+        case .linkedIn: return "LinkedIn-Friendly"
+        }
+    }
+}
+
 enum CareerOutputType: String, CaseIterable {
     case dailySummary
     case weeklyRecap
@@ -26,6 +44,7 @@ final class CareerOutput {
     var id: UUID
     var outputTypeRawValue: String
     var targetRole: String
+    var resumeStyleRawValue: String?
     var text: String
     var isFavorite: Bool
     var createdAt: Date
@@ -36,10 +55,16 @@ final class CareerOutput {
         set { outputTypeRawValue = newValue.rawValue }
     }
 
-    init(outputType: CareerOutputType, targetRole: String = "", text: String) {
+    var resumeStyle: ResumeBulletStyle? {
+        get { resumeStyleRawValue.flatMap { ResumeBulletStyle(rawValue: $0) } }
+        set { resumeStyleRawValue = newValue?.rawValue }
+    }
+
+    init(outputType: CareerOutputType, targetRole: String = "", resumeStyle: ResumeBulletStyle? = nil, text: String) {
         self.id = UUID()
         self.outputTypeRawValue = outputType.rawValue
         self.targetRole = targetRole
+        self.resumeStyleRawValue = resumeStyle?.rawValue
         self.text = text
         self.isFavorite = false
         self.createdAt = Date()

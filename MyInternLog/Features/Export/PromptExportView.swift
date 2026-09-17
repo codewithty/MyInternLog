@@ -10,6 +10,7 @@ struct PromptExportView: View {
 
     @State private var outputType: CareerOutputType = .dailySummary
     @State private var targetRole = ""
+    @State private var resumeStyle: ResumeBulletStyle = .beginner
     @State private var prompt = ""
     @State private var pastedResult = ""
     @State private var copied = false
@@ -56,6 +57,15 @@ struct PromptExportView: View {
                     if outputType == .resumeBullet || outputType == .interviewTalkingPoint {
                         TextField("Target role (optional)", text: $targetRole)
                             .onChange(of: targetRole) { _, _ in regeneratePrompt() }
+                    }
+
+                    if outputType == .resumeBullet {
+                        Picker("Style", selection: $resumeStyle) {
+                            ForEach(ResumeBulletStyle.allCases, id: \.self) { style in
+                                Text(style.label).tag(style)
+                            }
+                        }
+                        .onChange(of: resumeStyle) { _, _ in regeneratePrompt() }
                     }
                 }
 
@@ -114,6 +124,7 @@ struct PromptExportView: View {
         prompt = AIPromptBuilder.buildPrompt(
             type: outputType,
             targetRole: targetRole,
+            resumeStyle: outputType == .resumeBullet ? resumeStyle : nil,
             notes: sourceNotes,
             reflections: sourceReflections,
             profile: profile,
@@ -122,7 +133,12 @@ struct PromptExportView: View {
     }
 
     private func saveResult() {
-        let output = CareerOutput(outputType: outputType, targetRole: targetRole, text: pastedResult)
+        let output = CareerOutput(
+            outputType: outputType,
+            targetRole: targetRole,
+            resumeStyle: outputType == .resumeBullet ? resumeStyle : nil,
+            text: pastedResult
+        )
         context.insert(output)
         dismiss()
     }
