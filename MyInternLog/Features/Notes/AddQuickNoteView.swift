@@ -24,8 +24,15 @@ struct AddQuickNoteView: View {
     @State private var showingCamera = false
     @State private var showingFileImporter = false
 
+    // Includes anything the user just typed via AddChipField, not only
+    // already-persisted Tags/KnowledgeItems, so a freshly-added chip shows
+    // up immediately instead of silently vanishing until the note is saved.
     private var tagOptions: [String] {
-        Array(Set(Tag.starterSuggestions + allTags.map(\.name))).sorted()
+        Array(Set(Tag.starterSuggestions + allTags.map(\.name) + selectedTagNames)).sorted()
+    }
+
+    private var skillOptions: [String] {
+        Array(Set(allKnowledgeItems.map(\.name) + selectedSkillNames)).sorted()
     }
 
     var body: some View {
@@ -57,7 +64,7 @@ struct AddQuickNoteView: View {
                 }
 
                 Section("Skills / Tools / Concepts") {
-                    ChipFlowPicker(allOptions: allKnowledgeItems.map(\.name), selected: $selectedSkillNames, chipColor: .purple)
+                    ChipFlowPicker(allOptions: skillOptions, selected: $selectedSkillNames, chipColor: .purple)
                     AddChipField(placeholder: "New skill, tool, or concept") { newItem in
                         selectedSkillNames.insert(newItem)
                     }
