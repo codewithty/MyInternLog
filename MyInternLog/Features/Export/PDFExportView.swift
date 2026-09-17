@@ -15,8 +15,21 @@ private struct IdentifiableURL: Identifiable {
 struct PDFExportView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \DailyLog.date) private var logs: [DailyLog]
+    @Query private var careerOutputs: [CareerOutput]
+    @Query private var allStudyItems: [StudyItem]
 
     @State private var range: PDFRange = .thisWeek
+    @State private var template: PDFTemplate = .simpleJournal
+    @State private var includeRawNotes = true
+    @State private var includePhotoCaptions = true
+    @State private var includeFileAttachments = true
+    @State private var includeStudyItems = true
+    @State private var includeMoodStats = true
+    @State private var includeAISummaries = true
+    @State private var includeResumeBullets = false
+    @State private var useGenericWording = true
+    @State private var previewText = ""
+    @State private var showingPreview = false
     @State private var shareURL: IdentifiableURL?
     @State private var isGenerating = false
 
@@ -47,26 +60,44 @@ struct PDFExportView: View {
                     .pickerStyle(.segmented)
                 }
 
-                Section {
-                    Text("\(filteredLogs.count) day\(filteredLogs.count == 1 ? "" : "s") of entries will be included. Review the PDF for sensitive details before sharing.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                Section("Template") {
+                    Picker("Template", selection: $template) {
+                        ForEach(PDFTemplate.allCases, id: \.self) { option in
+                            Text(option.rawValue).tag(option)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                }
+
+                Section("Include") {
+                    Toggle("Raw notes", isOn: $includeRawNotes)
+                    Toggle("Photo captions", isOn: $includePhotoCaptions)
+                    Toggle("File attachments", isOn: $includeFileAttachments)
+                    Toggle("Study items", isOn: $includeStudyItems)
+                    Toggle("Mood/confidence stats", isOn: $includeMoodStats)
+                    Toggle("AI-assisted summaries", isOn: $includeAISummaries)
+                    Toggle("Resume bullets", isOn: $includeResumeBullets)
                 }
 
                 Section {
-                    Button {
-                        generateAndShare()
-                    } label: {
-                        if isGenerating {
-                            ProgressView()
-                        } else {
-                            Label("Generate PDF", systemImage: "doc.richtext")
-                        }
+                    Toggle("Use generic wording", isOn: $useGenericWording)
+                } footer: {
+                    Text("Review the preview for sensitive, confidential, or classified details before sharing this PDF.")
+                        .foregroundStyle(.orange)
+                }
+
+                Section {
+                    Button("Preview") {
+                        previewText = buildBodyText()
+                        showingPreview = true
                     }
-                    .disabled(filteredLogs.isEmpty || isGenerating)
+                    .disabled(filteredLogs.isEmpty)
                 }
             }
             .navigationTitle("Export PDF")
+            .sheet(isPresented: $showingPreview) {
+                PDFPreviewView(text: $previewText, isGenerating: isGenerating, onExport: generateAndShare)
+            }
             .sheet(item: $shareURL) { wrapper in
                 ShareSheet(items: [wrapper.url])
             }
@@ -75,17 +106,30 @@ struct PDFExportView: View {
 
     private func generateAndShare() {
         isGenerating = true
-        let body = buildBodyText()
-        let title = profile.title.isEmpty ? "Internship Journal" : profile.title
-        let subtitle = range.rawValue + (profile.organization.isEmpty ? "" : " · \(profile.organization)")
-
-        let data = PDFExportService.generateJournalPDF(title: title, subtitle: subtitle, generatedAt: Date(), body: body)
+        let title = useGenericWording ? "Internship" : (profile.title.isEmpty ? "Internship Journal" : profile.title)
+        let organization = useGenericWording ? "" : profile.organization
+        let cover = PDFCoverInfo(
+            reportTitle: range.rawValue + " Report",
+            internshipTitle: title,
+            organization: organization,
+            dateRangeDescription: dateRangeDescription(),
+            generatedAt: Date()
+        )
+        let data = PDFExportService.generateJournalPDF(template: template, cover: cover, body: previewText)
 
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("MyInternLog-\(range.rawValue).pdf")
         if (try? data.write(to: url)) != nil {
             shareURL = IdentifiableURL(url: url)
         }
         isGenerating = false
+        showingPreview = false
+    }
+
+    private func dateRangeDescription() -> String {
+        guard let first = filteredLogs.map(\.date).min(), let last = filteredLogs.map(\.date).max() else {
+            return range.rawValue
+        }
+        return first.formatted(date: .abbreviated, time: .omitted) + " – " + last.formatted(date: .abbreviated, time: .omitted)
     }
 
     private func buildBodyText() -> String {
@@ -93,9 +137,24 @@ struct PDFExportView: View {
         for log in filteredLogs {
             lines.append(log.date.formatted(date: .complete, time: .omitted))
             lines.append(String(repeating: "-", count: 40))
-            for note in log.quickNotes {
-                lines.append("Note: \(note.title)")
-                if !note.body.isEmpty { lines.append(note.body) }
+
+            if includeMoodStats, log.moodValue != nil || log.confidenceValue != nil || log.energyValue != nil || log.stressValue != nil {
+                var stats: [String] = []
+                if let v = log.moodValue { stats.append("Mood \(v)/5") }
+                if let v = log.confidenceValue { stats.append("Confidence \(v)/5") }
+                if let v = log.energyValue { stats.append("Energy \(v)/5") }
+                if let v = log.stressValue { stats.append("Stress \(v)/5") }
+                lines.append(stats.joined(separator: " · "))
+            }
+            if !log.selfSummary.isEmpty {
+                lines.append("Summary: " + log.selfSummary)
+            }
+
+            if includeRawNotes {
+                for note in log.quickNotes {
+                    lines.append("Note: \(note.title)")
+                    if !note.body.isEmpty { lines.append(note.body) }
+                }
             }
             for reflection in log.reflections {
                 lines.append("\(reflection.templateName) Reflection\(reflection.isComplete ? " (complete)" : " (draft)"):")
@@ -103,8 +162,55 @@ struct PDFExportView: View {
                     lines.append("\(answer.promptText): \(answer.answerText)")
                 }
             }
+            if includePhotoCaptions {
+                for attachment in log.attachments where attachment.fileType.hasPrefix("image") {
+                    lines.append("Photo: " + (attachment.caption.isEmpty ? attachment.fileName : attachment.caption))
+                }
+            }
+            if includeFileAttachments {
+                for attachment in log.attachments where !attachment.fileType.hasPrefix("image") {
+                    lines.append("File: " + attachment.fileName)
+                }
+            }
             lines.append("")
         }
+
+        if includeStudyItems, let first = filteredLogs.map(\.date).min(), let last = filteredLogs.map(\.date).max() {
+            let items = allStudyItems.filter { $0.dateAdded >= first && $0.dateAdded <= last }
+            if !items.isEmpty {
+                lines.append("Study Items")
+                lines.append(String(repeating: "-", count: 40))
+                for item in items {
+                    lines.append((item.isReviewed ? "[x] " : "[ ] ") + item.title)
+                }
+                lines.append("")
+            }
+        }
+
+        if includeAISummaries {
+            let relevant = careerOutputs.filter { $0.outputType == .dailySummary || $0.outputType == .weeklyRecap }
+            if !relevant.isEmpty {
+                lines.append("AI-Assisted Summaries")
+                lines.append(String(repeating: "-", count: 40))
+                for output in relevant {
+                    lines.append(output.text)
+                    lines.append("")
+                }
+            }
+        }
+
+        if includeResumeBullets {
+            let bullets = careerOutputs.filter { $0.outputType == .resumeBullet }
+            if !bullets.isEmpty {
+                lines.append("Resume Bullets")
+                lines.append(String(repeating: "-", count: 40))
+                for bullet in bullets {
+                    lines.append("• " + bullet.text)
+                }
+                lines.append("")
+            }
+        }
+
         if lines.isEmpty {
             lines.append("No entries in this range yet.")
         }
@@ -112,7 +218,40 @@ struct PDFExportView: View {
     }
 }
 
+private struct PDFPreviewView: View {
+    @Binding var text: String
+    let isGenerating: Bool
+    let onExport: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            TextEditor(text: $text)
+                .font(.system(.body, design: .monospaced))
+                .padding()
+                .navigationTitle("Preview & Sanitize")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button {
+                            onExport()
+                        } label: {
+                            if isGenerating {
+                                ProgressView()
+                            } else {
+                                Text("Export")
+                            }
+                        }
+                    }
+                }
+        }
+    }
+}
+
 #Preview {
     PDFExportView()
-        .modelContainer(for: [DailyLog.self, QuickNote.self, Reflection.self, InternshipProfile.self], inMemory: true)
+        .modelContainer(for: [DailyLog.self, QuickNote.self, Reflection.self, InternshipProfile.self, CareerOutput.self], inMemory: true)
 }
