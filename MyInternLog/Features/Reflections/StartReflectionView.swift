@@ -40,6 +40,7 @@ struct StartReflectionView: View {
 
     private func createReflection() {
         let reflection = Reflection(date: Date(), templateName: selectedTemplate.rawValue)
+        reflection.dailyLog = DailyLog.findOrCreate(for: reflection.date, in: context)
         context.insert(reflection)
         for (index, prompt) in selectedTemplate.prompts.enumerated() {
             let answer = ReflectionAnswer(

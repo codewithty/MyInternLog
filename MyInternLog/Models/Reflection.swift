@@ -10,6 +10,7 @@ final class Reflection {
     var completedAt: Date?
     var createdAt: Date
     var updatedAt: Date
+    var dailyLog: DailyLog?
 
     @Relationship(deleteRule: .cascade) var answers: [ReflectionAnswer]
 

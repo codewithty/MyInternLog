@@ -81,7 +81,10 @@ struct AddQuickNoteView: View {
     }
 
     private func saveNote() {
+        let dailyLog = DailyLog.findOrCreate(for: Date(), in: context)
+
         let note = QuickNote(title: title, body: noteBody, tag: selectedTag)
+        note.dailyLog = dailyLog
         context.insert(note)
         for image in selectedImages {
             if let fileName = AttachmentStorage.save(image) {
@@ -90,6 +93,7 @@ struct AddQuickNoteView: View {
                     fileType: "image/jpeg",
                     localPath: fileName
                 )
+                item.dailyLog = dailyLog
                 context.insert(item)
                 note.attachments.append(item)
             }
