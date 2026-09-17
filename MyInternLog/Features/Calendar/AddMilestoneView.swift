@@ -1,0 +1,51 @@
+import SwiftUI
+import SwiftData
+
+struct AddMilestoneView: View {
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+
+    var defaultDate: Date = Date()
+
+    @State private var title = ""
+    @State private var date = Date()
+    @State private var type: MilestoneType = .presentation
+    @State private var notes = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Title", text: $title)
+                DatePicker("Date", selection: $date, displayedComponents: .date)
+                Picker("Type", selection: $type) {
+                    ForEach(MilestoneType.allCases, id: \.self) { type in
+                        Text(type.label).tag(type)
+                    }
+                }
+                TextField("Notes (optional)", text: $notes, axis: .vertical)
+                    .lineLimit(3...)
+            }
+            .navigationTitle("New Milestone")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { date = defaultDate }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let milestone = Milestone(title: title, date: date, type: type, notes: notes)
+                        context.insert(milestone)
+                        dismiss()
+                    }
+                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    AddMilestoneView()
+        .modelContainer(for: Milestone.self, inMemory: true)
+}

@@ -9,8 +9,20 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @AppStorage("hasSeenSetup") private var hasSeenSetup = false
+    @AppStorage("appTheme") private var appThemeRawValue = AppTheme.system.rawValue
+
+    private var appTheme: AppTheme {
+        AppTheme(rawValue: appThemeRawValue) ?? .system
+    }
+
     var body: some View {
         TabView {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+
             QuickNoteListView()
                 .tabItem {
                     Label("Notes", systemImage: "note.text")
@@ -19,11 +31,6 @@ struct ContentView: View {
             StudyQueueListView()
                 .tabItem {
                     Label("Queue", systemImage: "checklist")
-                }
-
-            WeeklyRecapView()
-                .tabItem {
-                    Label("Recap", systemImage: "calendar")
                 }
 
             ReflectionListView()
@@ -35,6 +42,13 @@ struct ContentView: View {
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
+        }
+        .preferredColorScheme(appTheme.colorScheme)
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasSeenSetup },
+            set: { isShowing in hasSeenSetup = !isShowing }
+        )) {
+            SetupView(onFinish: { hasSeenSetup = true })
         }
     }
 }
