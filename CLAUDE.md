@@ -47,27 +47,48 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**Add Tags/Skills/Project Groups, a local (non-AI) summary draft builder, and a real XCTest target.**
+**Only remaining gap: a real XCTest target.**
 
 Completed (models): QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
-DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput.
+DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput, Tag, KnowledgeItem,
+ProjectGroup, WeeklyRecap.
 
-Completed (features): Quick Notes, Study Queue, Weekly Recap, Daily Reflections, photo
-import, Search, Home dashboard (with quick capture + launch tiles), first-run Setup,
-Settings, About, Calendar/Milestones (custom month grid), Dashboard (streak/stats/chart),
-Gallery, Reminders & local notifications, Entries/Archive, AI prompt export + Career
-Outputs, PDF export (Core Text pagination, share sheet).
+Completed (features): Quick Notes (tags, skills/tools/concepts, project group, highlight,
+camera/photo/PDF attachments), Study Queue, Weekly Recap ("wrapped" — top skills, biggest
+win, common theme, blockers, study items, photos), Daily Reflections (editable prompts,
+template switching, mood/confidence/energy/stress sliders, local non-AI "Suggest Draft"
+summary builder with optional per-field approval), Search (notes/study items/reflections/
+attachments/milestones/career outputs, filters, recent searches), Home dashboard, first-run
+Setup, Settings, About, Calendar/Milestones (month grid, day detail, milestone reminders),
+Dashboard (date-range picker, entries/wins/streak/mood/confidence/energy/stress trend
+charts), Gallery, Project Groups management, Reminders & local notifications (including
+tap-to-deep-link into Quick Capture or Reflection), Entries/Archive, AI prompt export
+(daily/weekly/resume-with-styles/interview/LinkedIn/end-of-internship) + Career Outputs
+(grouped by target role), PDF export (3 templates, export toggles, cover page, page
+numbers, preview/sanitize step), End-of-Internship Summary, sample data for previews.
 
-Not yet done (tracked as backlog, deliberately deferred — see docs/MVP.md for full detail):
-- Tags / Skills-Tools-Concepts / Project Groups / Highlights as their own reusable,
-  cross-cutting models (today there's only a single `NoteTag` category per QuickNote)
-- Local (non-AI) summary draft builder that pre-fills reflection prompts from existing notes
-- End-of-internship summary screen
-- Sample/mock data for SwiftUI previews
+Simplifications made deliberately (not full MVP.md literalism, to avoid overbuilding):
+- Highlights are a `HighlightType` enum directly on QuickNote, not a separate polymorphic
+  model attached to DailyLog/QuickNote/AttachmentItem/StudyItem/CareerOutput.
+- New skill/tool/concept entries default to `.concept` category rather than prompting the
+  user to categorize on the fly.
+
+Not yet done:
 - A real XCTest target (needs to be added via Xcode's GUI — New Target > Unit Testing
-  Bundle — since hand-editing project.pbxproj to add a target is unsafe to do blind).
-  DashboardStats and DateHelpers are already written as pure, dependency-free functions
-  so they're ready to test once a target exists.
+  Bundle — since neither hand-editing project.pbxproj nor the `pbxproj` Python library
+  can safely construct a full native-target object graph blind). DashboardStats,
+  DateHelpers, WeeklyRecapBuilder, and SummaryDraftBuilder are all pure, dependency-free
+  functions, ready to test once a target exists.
+
+## Known development gotcha
+
+If you change SwiftData model relationships/properties significantly across a session, the
+simulator's on-disk store (created earlier in the session with an older schema shape) can
+get out of sync — inserts silently vanish after the sheet dismisses instead of persisting,
+because SwiftData's automatic lightweight migration doesn't handle every kind of change.
+**Fix:** `xcrun simctl uninstall <device> ty.MyInternLog` then reinstall/relaunch. This is
+expected during active development, not a code bug — confirmed by reproducing the failure
+on the stale store and then verifying identical code saves correctly against a fresh one.
 
 ## Development Philosophy
 
@@ -105,35 +126,14 @@ Current Project Status
 
 Completed:
 
-Project setup
-GitHub setup
-CLAUDE.md
-SwiftData models (QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
-DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput)
-Quick Notes feature
-SwiftData persistence verified
-Study Queue feature
-Tab navigation
-Weekly Recap view
-Daily Reflections feature
-Photo import (PhotosPicker, library only)
-DailyLog linking (QuickNote, Reflection, AttachmentItem share one log per date)
-Search (notes, study items, reflections)
-First-run Setup flow (skippable) + Settings + About
-Home dashboard tab (quick capture, recent activity, launch tiles)
-Calendar/Milestones (custom month grid, day detail, milestone creation)
-Dashboard (streak, weekly entries, open study items, wins, 7-day chart)
-Gallery (attachment grid + zoomable viewer)
-Reminders & local notifications (off by default, permission requested on opt-in)
-Entries/Archive (grouped by week/month)
-AI prompt export (manual copy/paste) + Career Outputs
-PDF export (journal report, share sheet)
+Project setup, GitHub setup, CLAUDE.md
+All models and features listed under "Current Milestone" above
 
 Current Goal:
 Build the smallest useful version of MyInternLog before AFRL begins on June 22. That
-goal has been substantially exceeded in scope — nearly every major area from
-docs/MVP.md now has a working screen. Remaining backlog is listed under "Current
-Milestone" above.
+goal has been substantially exceeded in scope — nearly every screen and feature in
+docs/MVP.md now exists and works. Remaining backlog is listed under "Current
+Milestone" above (just the XCTest target).
 
 Current MVP Priority Order:
 
