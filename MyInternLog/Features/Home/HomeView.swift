@@ -109,6 +109,9 @@ struct HomeView: View {
                 NavigationLink(destination: EntriesListView()) {
                     LaunchTile(title: "Entries", systemImage: "archivebox.fill", color: .teal)
                 }
+                NavigationLink(destination: CareerOutputListView()) {
+                    LaunchTile(title: "Career Outputs", systemImage: "briefcase.fill", color: .indigo)
+                }
             }
             .padding(.horizontal)
         }
