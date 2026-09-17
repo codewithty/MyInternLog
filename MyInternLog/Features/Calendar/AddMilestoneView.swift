@@ -9,6 +9,8 @@ struct AddMilestoneView: View {
     @State private var date: Date
     @State private var type: MilestoneType = .presentation
     @State private var notes = ""
+    @State private var reminderOption: MilestoneReminderOption = .none
+    @State private var permissionDenied = false
 
     // Seeds the date picker directly from the calendar's currently-viewed
     // month, rather than relying on onAppear (which can race the sheet's
@@ -29,6 +31,11 @@ struct AddMilestoneView: View {
                 }
                 TextField("Notes (optional)", text: $notes, axis: .vertical)
                     .lineLimit(3...)
+                Picker("Reminder", selection: $reminderOption) {
+                    ForEach(MilestoneReminderOption.allCases, id: \.self) { option in
+                        Text(option.label).tag(option)
+                    }
+                }
             }
             .navigationTitle("New Milestone")
             .navigationBarTitleDisplayMode(.inline)
@@ -37,14 +44,35 @@ struct AddMilestoneView: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        let milestone = Milestone(title: title, date: date, type: type, notes: notes)
-                        context.insert(milestone)
-                        dismiss()
-                    }
-                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("Save") { save() }
+                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
+            .alert("Notifications Disabled", isPresented: $permissionDenied) {
+                Button("OK", role: .cancel) { dismiss() }
+            } message: {
+                Text("The milestone was saved, but enable notifications in Settings to get a reminder for it.")
+            }
+        }
+    }
+
+    private func save() {
+        let milestone = Milestone(title: title, date: date, type: type, notes: notes)
+        milestone.reminderOption = reminderOption
+        context.insert(milestone)
+
+        if reminderOption != .none {
+            Task {
+                let granted = await NotificationService.requestAuthorizationIfNeeded()
+                if granted {
+                    NotificationService.scheduleMilestoneReminder(milestone)
+                    dismiss()
+                } else {
+                    permissionDenied = true
+                }
+            }
+        } else {
+            dismiss()
         }
     }
 }

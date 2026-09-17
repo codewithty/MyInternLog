@@ -15,6 +15,15 @@ struct EditReminderView: View {
                     .lineLimit(2...)
                 DatePicker("Time", selection: $reminder.time, displayedComponents: .hourAndMinute)
 
+                Picker("Opens", selection: Binding(
+                    get: { reminder.destination },
+                    set: { reminder.destination = $0 }
+                )) {
+                    ForEach(ReminderDestination.allCases, id: \.self) { destination in
+                        Text(destination.label).tag(destination)
+                    }
+                }
+
                 Section("Repeat On") {
                     ForEach(1...7, id: \.self) { weekday in
                         Toggle(weekdaySymbols[weekday - 1], isOn: Binding(
