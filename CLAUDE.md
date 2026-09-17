@@ -126,7 +126,7 @@ Everything else should be considered future work unless explicitly requested.
 
 Development Workflow
 
-For every milestone:
+Default mode — for every milestone:
 
 Explain the milestone
 Explain the files involved
@@ -137,3 +137,5 @@ Explain how to test
 Suggest a commit message
 
 Do not automatically start the next milestone after completion.
+
+Batch mode: when the user explicitly asks to work through multiple milestones in one session (e.g. "work on everything"), the approval gate between milestones is skipped for that session. Each milestone should still land as its own focused commit with a clear message, and progress should still be reported as it happens. Return to default mode once the batch request is done.
