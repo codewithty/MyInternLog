@@ -19,12 +19,20 @@ struct SettingsView: View {
                     TextField("Organization", text: bindingFor(\.organization))
                     TextField("Location", text: bindingFor(\.location))
                     TextField("Mentor / supervisor", text: bindingFor(\.mentorName))
+                    TextField("Mentor email (optional)", text: bindingFor(\.mentorEmail))
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                    TextField("Mentor phone (optional)", text: bindingFor(\.mentorPhone))
+                        .keyboardType(.phonePad)
                     TextField("School / program", text: bindingFor(\.schoolProgram))
+                    TextField("Notes (optional)", text: bindingFor(\.notes), axis: .vertical)
+                        .lineLimit(3...)
                 }
 
                 Section("Dates") {
                     optionalDatePicker("Start date", date: bindingForOptional(\.startDate))
                     optionalDatePicker("End date", date: bindingForOptional(\.endDate))
+                    optionalDatePicker("Presentation date", date: bindingForOptional(\.presentationDate))
                 }
 
                 Section("Home Screen") {

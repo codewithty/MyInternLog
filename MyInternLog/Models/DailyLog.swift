@@ -5,6 +5,15 @@ import SwiftData
 final class DailyLog {
     var id: UUID
     var date: Date
+    var title: String
+    var selfSummary: String
+    var aiSummary: String
+    // 1-5 scale, optional — the UI never forces the user to set these.
+    var moodValue: Int?
+    var confidenceValue: Int?
+    var energyValue: Int?
+    var stressValue: Int?
+    var isComplete: Bool
     var createdAt: Date
     var updatedAt: Date
 
@@ -15,6 +24,14 @@ final class DailyLog {
     init(date: Date) {
         self.id = UUID()
         self.date = date
+        self.title = ""
+        self.selfSummary = ""
+        self.aiSummary = ""
+        self.moodValue = nil
+        self.confidenceValue = nil
+        self.energyValue = nil
+        self.stressValue = nil
+        self.isComplete = false
         self.createdAt = Date()
         self.updatedAt = Date()
         self.quickNotes = []

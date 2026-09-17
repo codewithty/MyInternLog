@@ -19,6 +19,8 @@ struct SetupView: View {
     @State private var startDate = Date()
     @State private var hasEndDate = false
     @State private var endDate = Date()
+    @State private var hasPresentationDate = false
+    @State private var presentationDate = Date()
 
     var body: some View {
         NavigationStack {
@@ -37,6 +39,10 @@ struct SetupView: View {
                     Toggle("Set end date", isOn: $hasEndDate.animation())
                     if hasEndDate {
                         DatePicker("End date", selection: $endDate, displayedComponents: .date)
+                    }
+                    Toggle("Set presentation date", isOn: $hasPresentationDate.animation())
+                    if hasPresentationDate {
+                        DatePicker("Presentation date", selection: $presentationDate, displayedComponents: .date)
                     }
                 }
 
@@ -73,6 +79,7 @@ struct SetupView: View {
         profile.schoolProgram = schoolProgram
         profile.startDate = hasStartDate ? startDate : nil
         profile.endDate = hasEndDate ? endDate : nil
+        profile.presentationDate = hasPresentationDate ? presentationDate : nil
         finish()
     }
 

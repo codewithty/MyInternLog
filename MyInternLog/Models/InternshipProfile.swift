@@ -12,6 +12,8 @@ final class InternshipProfile {
     var startDate: Date?
     var endDate: Date?
     var mentorName: String
+    var mentorEmail: String
+    var mentorPhone: String
     var schoolProgram: String
     var presentationDate: Date?
     var notes: String
@@ -26,6 +28,8 @@ final class InternshipProfile {
         self.startDate = nil
         self.endDate = nil
         self.mentorName = ""
+        self.mentorEmail = ""
+        self.mentorPhone = ""
         self.schoolProgram = ""
         self.presentationDate = nil
         self.notes = ""
