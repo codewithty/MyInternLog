@@ -26,6 +26,7 @@ enum CareerOutputType: String, CaseIterable {
     case interviewTalkingPoint
     case linkedInSummary
     case endOfInternshipSummary
+    case cunyPresentationPrep
 
     var label: String {
         switch self {
@@ -35,6 +36,7 @@ enum CareerOutputType: String, CaseIterable {
         case .interviewTalkingPoint: return "Interview Talking Points"
         case .linkedInSummary: return "LinkedIn Summary"
         case .endOfInternshipSummary: return "End-of-Internship Summary"
+        case .cunyPresentationPrep: return "CUNY Presentation Prep"
         }
     }
 }

@@ -7,6 +7,7 @@ struct PromptExportView: View {
 
     @Query(sort: \QuickNote.dateCreated, order: .reverse) private var allNotes: [QuickNote]
     @Query(sort: \Reflection.date, order: .reverse) private var allReflections: [Reflection]
+    @Query(sort: \Milestone.date) private var allMilestones: [Milestone]
 
     @State private var outputType: CareerOutputType
     @State private var targetRole = ""
@@ -30,7 +31,7 @@ struct PromptExportView: View {
         case .weeklyRecap:
             let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
             return allNotes.filter { $0.dateCreated >= cutoff }
-        case .endOfInternshipSummary:
+        case .endOfInternshipSummary, .cunyPresentationPrep:
             return allNotes
         default:
             return Array(allNotes.prefix(20))
@@ -44,10 +45,19 @@ struct PromptExportView: View {
         case .weeklyRecap:
             let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
             return allReflections.filter { $0.date >= cutoff }
-        case .endOfInternshipSummary:
+        case .endOfInternshipSummary, .cunyPresentationPrep:
             return allReflections
         default:
             return Array(allReflections.prefix(10))
+        }
+    }
+
+    private var sourceMilestones: [Milestone] {
+        switch outputType {
+        case .endOfInternshipSummary, .cunyPresentationPrep:
+            return allMilestones
+        default:
+            return []
         }
     }
 
@@ -135,6 +145,7 @@ struct PromptExportView: View {
             resumeStyle: outputType == .resumeBullet ? resumeStyle : nil,
             notes: sourceNotes,
             reflections: sourceReflections,
+            milestones: sourceMilestones,
             profile: profile,
             useGenericWording: profile.useGenericWordingByDefault
         )

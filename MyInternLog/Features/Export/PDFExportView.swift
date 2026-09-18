@@ -17,6 +17,7 @@ struct PDFExportView: View {
     @Query(sort: \DailyLog.date) private var logs: [DailyLog]
     @Query private var careerOutputs: [CareerOutput]
     @Query private var allStudyItems: [StudyItem]
+    @Query(sort: \Milestone.date) private var allMilestones: [Milestone]
 
     @State private var range: PDFRange = .thisWeek
     @State private var template: PDFTemplate = .simpleJournal
@@ -27,6 +28,7 @@ struct PDFExportView: View {
     @State private var includeMoodStats = true
     @State private var includeAISummaries = true
     @State private var includeResumeBullets = false
+    @State private var includeMilestones = true
     @State private var useGenericWording = true
     @State private var previewText = ""
     @State private var showingPreview = false
@@ -45,6 +47,19 @@ struct PDFExportView: View {
             return logs.filter { interval.contains($0.date) }
         case .all:
             return logs
+        }
+    }
+
+    private var filteredMilestones: [Milestone] {
+        let calendar = Calendar.current
+        switch range {
+        case .today:
+            return allMilestones.filter { calendar.isDateInToday($0.date) }
+        case .thisWeek:
+            guard let interval = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return [] }
+            return allMilestones.filter { interval.contains($0.date) }
+        case .all:
+            return allMilestones
         }
     }
 
@@ -77,6 +92,7 @@ struct PDFExportView: View {
                     Toggle("Mood/confidence stats", isOn: $includeMoodStats)
                     Toggle("AI-assisted summaries", isOn: $includeAISummaries)
                     Toggle("Resume bullets", isOn: $includeResumeBullets)
+                    Toggle("Milestones", isOn: $includeMilestones)
                 }
 
                 Section {
@@ -209,6 +225,15 @@ struct PDFExportView: View {
                 }
                 lines.append("")
             }
+        }
+
+        if includeMilestones, !filteredMilestones.isEmpty {
+            lines.append("Milestones")
+            lines.append(String(repeating: "-", count: 40))
+            for milestone in filteredMilestones {
+                lines.append(milestone.date.formatted(date: .abbreviated, time: .omitted) + " — " + milestone.title + " (" + milestone.type.label + ")")
+            }
+            lines.append("")
         }
 
         if lines.isEmpty {

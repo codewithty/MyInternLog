@@ -6,7 +6,6 @@ struct HomeView: View {
     @Query(sort: \QuickNote.dateCreated, order: .reverse) private var notes: [QuickNote]
     @Query(sort: \Reflection.date, order: .reverse) private var reflections: [Reflection]
 
-    @State private var showingQuickCapture = false
     @State private var showingSettings = false
 
     private var profile: InternshipProfile {
@@ -28,9 +27,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
 
-                    Button {
-                        showingQuickCapture = true
-                    } label: {
+                    NavigationLink(destination: TodayView()) {
                         Label("Let's Log", systemImage: "square.and.pencil")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
@@ -54,9 +51,6 @@ struct HomeView: View {
                         Image(systemName: "gearshape")
                     }
                 }
-            }
-            .sheet(isPresented: $showingQuickCapture) {
-                AddQuickNoteView()
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()

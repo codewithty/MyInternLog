@@ -11,6 +11,7 @@ enum AIPromptBuilder {
         resumeStyle: ResumeBulletStyle? = nil,
         notes: [QuickNote],
         reflections: [Reflection],
+        milestones: [Milestone] = [],
         profile: InternshipProfile,
         useGenericWording: Bool
     ) -> String {
@@ -34,10 +35,12 @@ enum AIPromptBuilder {
         lines.append("")
         lines.append("Here are my raw notes and reflections:")
 
-        // The end-of-internship summary is meant to use everything available;
-        // other prompt types stay short so the copy/paste prompt is manageable.
-        let noteLimit = type == .endOfInternshipSummary ? notes.count : 15
-        let reflectionLimit = type == .endOfInternshipSummary ? reflections.count : 5
+        // The end-of-internship summary and CUNY prep are meant to use
+        // everything available; other prompt types stay short so the
+        // copy/paste prompt is manageable.
+        let usesFullHistory = type == .endOfInternshipSummary || type == .cunyPresentationPrep
+        let noteLimit = usesFullHistory ? notes.count : 15
+        let reflectionLimit = usesFullHistory ? reflections.count : 5
 
         for note in notes.prefix(noteLimit) {
             let body = note.body.isEmpty ? "" : " — \(note.body)"
@@ -46,6 +49,14 @@ enum AIPromptBuilder {
         for reflection in reflections.prefix(reflectionLimit) {
             for answer in reflection.answers where !answer.answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 lines.append("- \(answer.promptText): \(answer.answerText)")
+            }
+        }
+
+        if !milestones.isEmpty {
+            lines.append("")
+            lines.append("Key dates/milestones:")
+            for milestone in milestones {
+                lines.append("- \(milestone.title) (\(milestone.type.label)): \(milestone.date.formatted(date: .abbreviated, time: .omitted))")
             }
         }
 

@@ -8,6 +8,7 @@ enum MilestoneType: String, CaseIterable {
     case evaluation
     case reportDue
     case presentation
+    case cunyPresentation
     case schoolDeadline
 
     var label: String {
@@ -18,6 +19,7 @@ enum MilestoneType: String, CaseIterable {
         case .evaluation: return "Evaluation"
         case .reportDue: return "Report Due"
         case .presentation: return "Presentation"
+        case .cunyPresentation: return "CUNY Presentation"
         case .schoolDeadline: return "School Deadline"
         }
     }

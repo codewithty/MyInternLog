@@ -28,8 +28,33 @@ struct ReflectionDetailView: View {
         reflection.dailyLog?.quickNotes ?? []
     }
 
+    private var todaysAttachments: [AttachmentItem] {
+        reflection.dailyLog?.attachments ?? []
+    }
+
     var body: some View {
         List {
+            if !todaysAttachments.isEmpty {
+                Section("Today's Attachments (for context)") {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(todaysAttachments) { attachment in
+                                if attachment.fileType.hasPrefix("image"), let image = AttachmentStorage.load(fileName: attachment.localPath) {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 56, height: 56)
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                } else {
+                                    Image(systemName: "doc.fill")
+                                        .frame(width: 56, height: 56)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if !todaysNotes.isEmpty {
                 Section("Today's Notes (for context)") {
                     ForEach(todaysNotes) { note in

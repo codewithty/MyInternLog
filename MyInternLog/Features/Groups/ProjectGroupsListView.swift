@@ -7,18 +7,22 @@ struct ProjectGroupsListView: View {
     @State private var showingAdd = false
 
     var body: some View {
+        let activeGroups = groups.filter { !$0.isArchived }
+        let archivedGroups = groups.filter(\.isArchived)
+
         List {
             Section("Active") {
-                ForEach(groups.filter { !$0.isArchived }) { group in
+                ForEach(activeGroups) { group in
                     GroupRow(group: group)
                 }
+                .onDelete { offsets in deleteGroups(activeGroups, at: offsets) }
             }
-            let archived = groups.filter(\.isArchived)
-            if !archived.isEmpty {
+            if !archivedGroups.isEmpty {
                 Section("Archived") {
-                    ForEach(archived) { group in
+                    ForEach(archivedGroups) { group in
                         GroupRow(group: group)
                     }
+                    .onDelete { offsets in deleteGroups(archivedGroups, at: offsets) }
                 }
             }
         }
@@ -35,6 +39,12 @@ struct ProjectGroupsListView: View {
         .onAppear { ProjectGroup.ensureDefault(in: context) }
         .sheet(isPresented: $showingAdd) {
             AddProjectGroupView()
+        }
+    }
+
+    private func deleteGroups(_ source: [ProjectGroup], at offsets: IndexSet) {
+        for index in offsets {
+            context.delete(source[index])
         }
     }
 }
