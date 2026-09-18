@@ -51,30 +51,55 @@ private struct GalleryThumbnail: View {
 }
 
 struct AttachmentViewerView: View {
-    let attachment: AttachmentItem
+    @Bindable var attachment: AttachmentItem
 
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     @State private var scale: CGFloat = 1.0
+    @State private var showingDeleteConfirmation = false
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            if let image = AttachmentStorage.load(fileName: attachment.localPath) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .scaleEffect(scale)
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in scale = value }
-                            .onEnded { _ in
-                                withAnimation { scale = max(1.0, min(scale, 4.0)) }
-                            }
-                    )
-            } else {
-                ContentUnavailableView("Couldn't Load Image", systemImage: "exclamationmark.triangle")
+        VStack(spacing: 0) {
+            ScrollView([.horizontal, .vertical]) {
+                if let image = AttachmentStorage.load(fileName: attachment.localPath) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .scaleEffect(scale)
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { value in scale = value }
+                                .onEnded { _ in
+                                    withAnimation { scale = max(1.0, min(scale, 4.0)) }
+                                }
+                        )
+                } else {
+                    ContentUnavailableView("Couldn't Load Image", systemImage: "exclamationmark.triangle")
+                }
             }
+            .frame(maxHeight: .infinity)
+
+            Form {
+                TextField("Caption", text: $attachment.caption)
+                TextField("Notes", text: $attachment.notes, axis: .vertical)
+                    .lineLimit(3...)
+                Button("Delete Attachment", role: .destructive) {
+                    showingDeleteConfirmation = true
+                }
+            }
+            .frame(height: 220)
         }
         .navigationTitle(attachment.caption.isEmpty ? "Attachment" : attachment.caption)
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Delete this attachment?", isPresented: $showingDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                context.delete(attachment)
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This can't be undone.")
+        }
     }
 }
 

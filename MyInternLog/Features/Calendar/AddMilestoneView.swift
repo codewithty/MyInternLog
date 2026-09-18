@@ -5,18 +5,31 @@ struct AddMilestoneView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    private var existingMilestone: Milestone?
+
     @State private var title = ""
     @State private var date: Date
     @State private var type: MilestoneType = .presentation
     @State private var notes = ""
     @State private var reminderOption: MilestoneReminderOption = .none
     @State private var permissionDenied = false
+    @State private var showingDeleteConfirmation = false
 
-    // Seeds the date picker directly from the calendar's currently-viewed
-    // month, rather than relying on onAppear (which can race the sheet's
-    // presentation animation).
+    // Seeds state directly from either the calendar's currently-viewed month
+    // (new milestone) or the milestone being edited, rather than relying on
+    // onAppear, which can race the sheet's presentation animation.
     init(defaultDate: Date = Date()) {
+        self.existingMilestone = nil
         _date = State(initialValue: defaultDate)
+    }
+
+    init(editing milestone: Milestone) {
+        self.existingMilestone = milestone
+        _title = State(initialValue: milestone.title)
+        _date = State(initialValue: milestone.date)
+        _type = State(initialValue: milestone.type)
+        _notes = State(initialValue: milestone.notes)
+        _reminderOption = State(initialValue: milestone.reminderOption ?? .none)
     }
 
     var body: some View {
@@ -36,8 +49,16 @@ struct AddMilestoneView: View {
                         Text(option.label).tag(option)
                     }
                 }
+
+                if existingMilestone != nil {
+                    Section {
+                        Button("Delete Milestone", role: .destructive) {
+                            showingDeleteConfirmation = true
+                        }
+                    }
+                }
             }
-            .navigationTitle("New Milestone")
+            .navigationTitle(existingMilestone == nil ? "New Milestone" : "Edit Milestone")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -53,13 +74,31 @@ struct AddMilestoneView: View {
             } message: {
                 Text("The milestone was saved, but enable notifications in Settings to get a reminder for it.")
             }
+            .alert("Delete this milestone?", isPresented: $showingDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    if let existingMilestone {
+                        context.delete(existingMilestone)
+                    }
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This can't be undone.")
+            }
         }
     }
 
     private func save() {
-        let milestone = Milestone(title: title, date: date, type: type, notes: notes)
+        let milestone = existingMilestone ?? Milestone(title: title, date: date, type: type, notes: notes)
+        milestone.title = title
+        milestone.date = date
+        milestone.type = type
+        milestone.notes = notes
         milestone.reminderOption = reminderOption
-        context.insert(milestone)
+        milestone.updatedAt = Date()
+        if existingMilestone == nil {
+            context.insert(milestone)
+        }
 
         if reminderOption != .none {
             Task {

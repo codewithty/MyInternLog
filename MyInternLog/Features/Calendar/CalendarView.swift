@@ -7,12 +7,14 @@ private struct IdentifiableDate: Identifiable {
 }
 
 struct CalendarView: View {
+    @Environment(\.modelContext) private var context
     @Query private var dailyLogs: [DailyLog]
     @Query(sort: \Milestone.date) private var milestones: [Milestone]
 
     @State private var displayedMonth = Calendar.current.startOfDay(for: Date())
     @State private var selectedDay: IdentifiableDate?
     @State private var showingAddMilestone = false
+    @State private var editingMilestone: Milestone?
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
     private let calendar = Calendar.current
@@ -62,7 +64,10 @@ struct CalendarView: View {
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                .contentShape(Rectangle())
+                                .onTapGesture { editingMilestone = milestone }
                             }
+                            .onDelete(perform: deleteMilestones)
                         }
                     }
                 }
@@ -84,6 +89,15 @@ struct CalendarView: View {
             .sheet(item: $selectedDay) { wrapper in
                 DayDetailView(date: wrapper.date, dailyLog: dailyLog(for: wrapper.date))
             }
+            .sheet(item: $editingMilestone) { milestone in
+                AddMilestoneView(editing: milestone)
+            }
+        }
+    }
+
+    private func deleteMilestones(at offsets: IndexSet) {
+        for index in offsets {
+            context.delete(milestonesThisMonth[index])
         }
     }
 

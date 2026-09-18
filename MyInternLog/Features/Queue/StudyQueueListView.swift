@@ -2,13 +2,20 @@ import SwiftUI
 import SwiftData
 
 struct StudyQueueListView: View {
+    @Environment(\.modelContext) private var context
     @Query(sort: \StudyItem.dateAdded, order: .reverse) private var items: [StudyItem]
     @State private var showingAddItem = false
+    @State private var editingItem: StudyItem?
 
     var body: some View {
         NavigationStack {
-            List(items) { item in
-                StudyItemRow(item: item)
+            List {
+                ForEach(items) { item in
+                    StudyItemRow(item: item)
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingItem = item }
+                }
+                .onDelete(perform: deleteItems)
             }
             .overlay {
                 if items.isEmpty {
@@ -28,6 +35,15 @@ struct StudyQueueListView: View {
             .sheet(isPresented: $showingAddItem) {
                 AddStudyItemView()
             }
+            .sheet(item: $editingItem) { item in
+                EditStudyItemView(item: item)
+            }
+        }
+    }
+
+    private func deleteItems(at offsets: IndexSet) {
+        for index in offsets {
+            context.delete(items[index])
         }
     }
 }

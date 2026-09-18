@@ -5,6 +5,7 @@ struct CareerOutputListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \CareerOutput.createdAt, order: .reverse) private var outputs: [CareerOutput]
     @State private var showingExport = false
+    @State private var editingOutput: CareerOutput?
 
     private var groupedByType: [(type: CareerOutputType, outputs: [CareerOutput])] {
         CareerOutputType.allCases.compactMap { type in
@@ -24,6 +25,8 @@ struct CareerOutputListView: View {
     private func rows(for outputs: [CareerOutput]) -> some View {
         ForEach(outputs) { output in
             CareerOutputRow(output: output)
+                .contentShape(Rectangle())
+                .onTapGesture { editingOutput = output }
         }
         .onDelete { offsets in
             for index in offsets {
@@ -71,6 +74,49 @@ struct CareerOutputListView: View {
             }
             .sheet(isPresented: $showingExport) {
                 PromptExportView()
+            }
+            .sheet(item: $editingOutput) { output in
+                EditCareerOutputView(output: output)
+            }
+        }
+    }
+}
+
+private struct EditCareerOutputView: View {
+    @Bindable var output: CareerOutput
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingDeleteConfirmation = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Target role (optional)", text: $output.targetRole)
+                TextEditor(text: $output.text)
+                    .frame(minHeight: 160)
+                Toggle("Favorite", isOn: $output.isFavorite)
+
+                Section {
+                    Button("Delete", role: .destructive) {
+                        showingDeleteConfirmation = true
+                    }
+                }
+            }
+            .navigationTitle(output.outputType.label)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .alert("Delete this output?", isPresented: $showingDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    context.delete(output)
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This can't be undone.")
             }
         }
     }
