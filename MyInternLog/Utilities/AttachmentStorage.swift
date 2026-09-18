@@ -16,6 +16,22 @@ enum AttachmentStorage {
         }
     }
 
+    // For non-image files (PDFs, etc.) picked via the Files app.
+    static func save(fileData: Data, preferredExtension: String) -> String? {
+        let fileName = UUID().uuidString + "." + preferredExtension
+        let url = documentsURL.appendingPathComponent(fileName)
+        do {
+            try fileData.write(to: url)
+            return fileName
+        } catch {
+            return nil
+        }
+    }
+
+    static func fileURL(fileName: String) -> URL {
+        documentsURL.appendingPathComponent(fileName)
+    }
+
     static func load(fileName: String) -> UIImage? {
         let url = documentsURL.appendingPathComponent(fileName)
         guard let data = try? Data(contentsOf: url) else { return nil }

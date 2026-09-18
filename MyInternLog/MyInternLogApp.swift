@@ -10,10 +10,12 @@ import SwiftData
 
 @main
 struct MyInternLogApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [QuickNote.self, StudyItem.self, Reflection.self, ReflectionAnswer.self, AttachmentItem.self])
+        .modelContainer(for: [QuickNote.self, StudyItem.self, Reflection.self, ReflectionAnswer.self, AttachmentItem.self, DailyLog.self, InternshipProfile.self, Milestone.self, ReminderSetting.self, CareerOutput.self, Tag.self, KnowledgeItem.self, ProjectGroup.self, WeeklyRecap.self])
     }
 }

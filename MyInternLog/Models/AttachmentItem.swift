@@ -13,6 +13,7 @@ final class AttachmentItem {
     var updatedAt: Date
 
     var quickNote: QuickNote?
+    var dailyLog: DailyLog?
 
     init(fileName: String, fileType: String, localPath: String) {
         self.id = UUID()
