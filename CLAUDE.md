@@ -66,6 +66,10 @@ tap-to-deep-link into Quick Capture or Reflection), Entries/Archive, AI prompt e
 (daily/weekly/resume-with-styles/interview/LinkedIn/end-of-internship) + Career Outputs
 (grouped by target role), PDF export (3 templates, export toggles, cover page, page
 numbers, preview/sanitize step), End-of-Internship Summary, sample data for previews.
+Editing and deletion now exist throughout: Quick Notes (full editor + delete), Study Items
+(edit + delete), Milestones (edit + delete), Career Outputs (edit text/role/favorite +
+delete), Attachments (caption/notes editing + delete) — all via tap-to-edit and
+swipe-to-delete.
 
 Simplifications made deliberately (not full MVP.md literalism, to avoid overbuilding):
 - Highlights are a `HighlightType` enum directly on QuickNote, not a separate polymorphic
@@ -89,6 +93,16 @@ because SwiftData's automatic lightweight migration doesn't handle every kind of
 **Fix:** `xcrun simctl uninstall <device> ty.MyInternLog` then reinstall/relaunch. This is
 expected during active development, not a code bug — confirmed by reproducing the failure
 on the stale store and then verifying identical code saves correctly against a fresh one.
+
+## Known testing-tool limitation (Claude Code's iOS Simulator control)
+
+Taps/swipes on rows *inside a SwiftUI `List`* did not register when driven through the
+automated simulator tool — this reproduced even on a completely unmodified, pre-existing
+`Button` (the StudyItem checkbox) as well as `NavigationLink` and `onTapGesture` List rows.
+Every non-List interaction in the same sessions (sheets, Form fields, toolbar buttons,
+LazyVGrid tiles, tab bar, pickers) worked reliably. So: List-hosted row interactions
+(tap-to-edit, swipe-to-delete) are implemented per the code review but not confirmed via
+automated tap — verify those manually in Xcode's own simulator before trusting them blind.
 
 ## Development Philosophy
 
