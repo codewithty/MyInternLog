@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **SwiftUI** — UI framework
 - **SwiftData** — local-only persistence (no backend)
 - **MVVM** — architectural pattern
-- iPhone-first; no iPad/macOS targets in scope
+- iPhone-only for Version 1 (target device: iPhone 17 Pro, iOS 26.5+); no iPad/macOS targets
 
 ## Build & Run
 
@@ -30,12 +30,12 @@ open MyInternLog.xcodeproj
 
 Build from the command line (replace destination as needed):
 ```bash
-xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
-Run tests:
+Run tests (34 unit tests in `MyInternLogTests/`, covering streaks, month grid, weekly recap, summary drafts, week numbers, reminders, search filters, and AI prompt privacy):
 ```bash
-xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'platform=iOS Simulator,name=iPhone 16' test
+xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'platform=iOS Simulator,name=iPhone 17' test
 ```
 
 ## Architecture
@@ -47,7 +47,7 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**Only remaining gap: a real XCTest target.**
+**No open gaps against docs/MVP.md. Next: manual device testing, then Version 2 ideas.**
 
 Completed (models): QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
 DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput, Tag, KnowledgeItem,
@@ -77,12 +77,10 @@ Simplifications made deliberately (not full MVP.md literalism, to avoid overbuil
 - New skill/tool/concept entries default to `.concept` category rather than prompting the
   user to categorize on the fly.
 
-Not yet done:
-- A real XCTest target (needs to be added via Xcode's GUI — New Target > Unit Testing
-  Bundle — since neither hand-editing project.pbxproj nor the `pbxproj` Python library
-  can safely construct a full native-target object graph blind). DashboardStats,
-  DateHelpers, WeeklyRecapBuilder, and SummaryDraftBuilder are all pure, dependency-free
-  functions, ready to test once a target exists.
+Testing: `MyInternLogTests` is a unit-test target (XCTest) with in-memory SwiftData
+helpers in `TestSupport.swift`. New pure-logic code should get a test alongside it. The
+target was added by editing `project.pbxproj` directly (folder-synchronized group, like
+the app target) and verified with `xcodebuild test`.
 
 ## Known development gotcha
 
@@ -147,7 +145,7 @@ Current Goal:
 Build the smallest useful version of MyInternLog before AFRL begins on June 22. That
 goal has been substantially exceeded in scope — nearly every screen and feature in
 docs/MVP.md now exists and works. Remaining backlog is listed under "Current
-Milestone" above (just the XCTest target).
+Milestone" above.
 
 Current MVP Priority Order:
 
