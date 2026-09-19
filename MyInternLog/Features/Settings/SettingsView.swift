@@ -7,6 +7,11 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appThemeRawValue = AppTheme.system.rawValue
     @AppStorage("requireDraftApproval") private var requireDraftApproval = false
     @State private var showingAbout = false
+    @State private var exportedFile: IdentifiableURL?
+    @State private var showingExportError = false
+    @State private var exportErrorMessage = ""
+
+    private let demoMode = DemoMode.shared
 
     private var profile: InternshipProfile {
         InternshipProfile.current(in: context)
@@ -15,7 +20,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Internship") {
+                Section("Your Role") {
                     TextField("Title", text: bindingFor(\.title))
                     TextField("Organization", text: bindingFor(\.organization))
                     TextField("Location", text: bindingFor(\.location))
@@ -37,7 +42,7 @@ struct SettingsView: View {
                 }
 
                 Section("Home Screen") {
-                    Toggle("Show internship week number", isOn: bindingFor(\.showWeekNumber))
+                    Toggle("Show week number", isOn: bindingFor(\.showWeekNumber))
                 }
 
                 Section {
@@ -65,6 +70,23 @@ struct SettingsView: View {
                     Text("Applies to AI prompt exports and PDF reports so lab/project specifics stay out by default.")
                 }
 
+                Section {
+                    Button("Export All Data (JSON)", systemImage: "square.and.arrow.up", action: exportData)
+                        .disabled(demoMode.isOn)
+                } header: {
+                    Text("Your Data")
+                } footer: {
+                    Text("A complete copy of your notes, reflections, milestones, and settings as a readable file. Photos and PDFs aren't included, and the file can't be re-imported yet.")
+                }
+
+                Section {
+                    Toggle("Demo mode", isOn: Bindable(demoMode).isOn)
+                } header: {
+                    Text("Demo")
+                } footer: {
+                    Text("Explore the app filled with sample data. Nothing you do in demo mode is saved, and your real entries are never touched.")
+                }
+
                 Section("Appearance") {
                     Picker("Theme", selection: $appThemeRawValue) {
                         ForEach(AppTheme.allCases, id: \.rawValue) { theme in
@@ -83,6 +105,21 @@ struct SettingsView: View {
             .sheet(isPresented: $showingAbout) {
                 AboutView()
             }
+            .sheet(item: $exportedFile) { file in
+                ShareSheet(items: [file.url])
+            }
+            .alert("Couldn't Export", isPresented: $showingExportError) { } message: {
+                Text(exportErrorMessage)
+            }
+        }
+    }
+
+    private func exportData() {
+        do {
+            exportedFile = IdentifiableURL(url: try DataExporter.writeExportFile(from: context))
+        } catch {
+            exportErrorMessage = error.localizedDescription
+            showingExportError = true
         }
     }
 

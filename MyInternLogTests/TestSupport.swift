@@ -6,14 +6,8 @@ import SwiftData
 // model objects (and relationships between them) without touching disk.
 @MainActor
 func makeTestContext() throws -> ModelContext {
-    let schema = Schema([
-        QuickNote.self, StudyItem.self, Reflection.self, ReflectionAnswer.self,
-        AttachmentItem.self, DailyLog.self, InternshipProfile.self, Milestone.self,
-        ReminderSetting.self, CareerOutput.self, Tag.self, KnowledgeItem.self,
-        ProjectGroup.self, WeeklyRecap.self
-    ])
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try ModelContainer(for: schema, configurations: [config])
+    let container = try ModelContainer(for: AppSchema.schema, configurations: [config])
     return ModelContext(container)
 }
 

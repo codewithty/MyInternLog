@@ -68,14 +68,14 @@ struct EndOfInternshipView: View {
                     Button {
                         showingPDFExport = true
                     } label: {
-                        Label("Export Full Internship PDF", systemImage: "doc.richtext")
+                        Label("Export Full PDF", systemImage: "doc.richtext")
                     }
                     NavigationLink("View All Career Outputs") {
                         CareerOutputListView()
                     }
                 }
             }
-            .navigationTitle("End of Internship")
+            .navigationTitle("Wrap-Up")
             .sheet(isPresented: $showingExport) {
                 PromptExportView(initialType: .endOfInternshipSummary)
             }

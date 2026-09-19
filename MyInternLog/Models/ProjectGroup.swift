@@ -21,11 +21,11 @@ final class ProjectGroup {
         self.updatedAt = Date()
     }
 
-    // Every install gets a default "Internship" group so notes have
+    // Every install gets a default "General" group so notes have
     // somewhere to land before the user creates their own groups.
     static func ensureDefault(in context: ModelContext) {
         let descriptor = FetchDescriptor<ProjectGroup>()
         guard let existing = try? context.fetch(descriptor), existing.isEmpty else { return }
-        context.insert(ProjectGroup(name: "Internship", colorName: "blue", iconName: "briefcase.fill"))
+        context.insert(ProjectGroup(name: "General", colorName: "blue", iconName: "briefcase.fill"))
     }
 }

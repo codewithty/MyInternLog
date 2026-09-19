@@ -64,7 +64,7 @@ The app should feel like a modern dashboard wrapped around a reflective journal.
 
 - iPhone first.
 - Target device: iPhone 17 Pro.
-- Target OS: iOS 26.5 or later (deployment target 26.5).
+- Target OS: iOS 26.0 or later (deployment target 26.0).
 - Support portrait and landscape orientation on iPhone.
 - iPad and Mac support are Version 2/future.
 - Version 1 should work offline. The only AI workflow is manual copy/paste outside the app.

@@ -15,16 +15,19 @@ enum AIPromptBuilder {
         profile: InternshipProfile,
         useGenericWording: Bool
     ) -> String {
+        // Deliberately not "technical" or "internship": the app is used for co-ops,
+        // research roles, and jobs too, and the wrong framing skews the AI's wording.
+        let genericContext = "a work experience such as an internship or co-op"
         let context: String
         if useGenericWording {
-            context = "a technical internship"
+            context = genericContext
         } else {
             let parts = [profile.title, profile.organization].filter { !$0.isEmpty }
-            context = parts.isEmpty ? "a technical internship" : parts.joined(separator: " at ")
+            context = parts.isEmpty ? genericContext : parts.joined(separator: " at ")
         }
 
         var lines: [String] = []
-        lines.append("I'm writing a \(type.label.lowercased()) based on my internship notes. Please write it in clear, professional language.")
+        lines.append("I'm writing a \(type.label.lowercased()) based on my work notes. Please write it in clear, professional language.")
         lines.append("Context: \(context)")
         if !targetRole.isEmpty {
             lines.append("Target role/context: \(targetRole)")

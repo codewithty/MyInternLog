@@ -35,8 +35,8 @@ enum CareerOutputType: String, CaseIterable {
         case .resumeBullet: return "Resume Bullets"
         case .interviewTalkingPoint: return "Interview Talking Points"
         case .linkedInSummary: return "LinkedIn Summary"
-        case .endOfInternshipSummary: return "End-of-Internship Summary"
-        case .cunyPresentationPrep: return "CUNY Presentation Prep"
+        case .endOfInternshipSummary: return "Wrap-Up Summary"
+        case .cunyPresentationPrep: return "School Presentation Prep"
         }
     }
 }

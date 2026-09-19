@@ -12,10 +12,12 @@ import SwiftData
 struct MyInternLogApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    // Opened once per launch. RootView decides whether to use it or demo mode's sample store.
+    private let realContainer = AppSchema.makeRealContainer()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView(realContainer: realContainer)
         }
-        .modelContainer(for: [QuickNote.self, StudyItem.self, Reflection.self, ReflectionAnswer.self, AttachmentItem.self, DailyLog.self, InternshipProfile.self, Milestone.self, ReminderSetting.self, CareerOutput.self, Tag.self, KnowledgeItem.self, ProjectGroup.self, WeeklyRecap.self])
     }
 }

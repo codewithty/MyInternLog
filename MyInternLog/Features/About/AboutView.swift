@@ -23,15 +23,17 @@ struct AboutView: View {
                 }
 
                 Section("What it's for") {
-                    Text("MyInternLog helps interns capture what they worked on, what they learned, and what they accomplished — then turns those notes into recaps, study material, and career-ready summaries.")
+                    Text("MyInternLog helps you capture what you worked on, what you learned, and what you accomplished during an internship, co-op, research role, or job — then turns those notes into recaps, study material, and career-ready summaries.")
                 }
 
                 Section("Your data") {
-                    Text("Everything you record stays on this device. There is no account, no login, and no backend server in this version.")
+                    Text(PrivacyNotice.storage)
+                    Text(PrivacyNotice.caution)
+                    Text(PrivacyNotice.aiExport)
                 }
 
                 Section("About this project") {
-                    Text("MyInternLog is a student-built educational project, created for use during a college internship.")
+                    Text("MyInternLog is a student-built educational project. It started as a way to log a college internship.")
                 }
             }
             .navigationTitle("About")
