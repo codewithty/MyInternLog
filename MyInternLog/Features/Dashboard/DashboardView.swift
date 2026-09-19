@@ -5,7 +5,7 @@ import Charts
 private enum DashboardRange: String, CaseIterable {
     case week = "Week"
     case month = "Month"
-    case allInternship = "All Internship"
+    case allInternship = "Year"
 
     var days: Int {
         switch self {

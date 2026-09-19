@@ -13,13 +13,13 @@ enum MilestoneType: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .internshipStart: return "Internship Start"
-        case .internshipEnd: return "Internship End"
+        case .internshipStart: return "Start Date"
+        case .internshipEnd: return "End Date"
         case .mentorMeeting: return "Mentor Meeting"
         case .evaluation: return "Evaluation"
         case .reportDue: return "Report Due"
         case .presentation: return "Presentation"
-        case .cunyPresentation: return "CUNY Presentation"
+        case .cunyPresentation: return "School Presentation"
         case .schoolDeadline: return "School Deadline"
         }
     }

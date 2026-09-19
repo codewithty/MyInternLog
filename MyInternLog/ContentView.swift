@@ -17,6 +17,8 @@ struct ContentView: View {
     @AppStorage("appTheme") private var appThemeRawValue = AppTheme.system.rawValue
     @StateObject private var router = NotificationRouter.shared
 
+    private let demoMode = DemoMode.shared
+
     @State private var selectedTab: AppTab = .home
     @State private var showingQuickCaptureFromReminder = false
     @State private var showingReflectionFromReminder = false
@@ -25,7 +27,7 @@ struct ContentView: View {
         AppTheme(rawValue: appThemeRawValue) ?? .system
     }
 
-    var body: some View {
+    private var tabs: some View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
@@ -56,6 +58,18 @@ struct ContentView: View {
                     Label("Search", systemImage: "magnifyingglass")
                 }
                 .tag(AppTab.search)
+        }
+    }
+
+    var body: some View {
+        // The accessory sits above the tab bar. A top banner would land on the
+        // navigation bars' buttons, because each tab's NavigationStack ignores it.
+        Group {
+            if demoMode.isOn {
+                tabs.tabViewBottomAccessory { DemoModeBanner() }
+            } else {
+                tabs
+            }
         }
         .preferredColorScheme(appTheme.colorScheme)
         .fullScreenCover(isPresented: Binding(

@@ -25,8 +25,15 @@ struct SetupView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Internship") {
-                    TextField("Title (e.g. Software Intern)", text: $title)
+                Section("Before you start") {
+                    Label(PrivacyNotice.storage, systemImage: "lock.shield")
+                    Label(PrivacyNotice.caution, systemImage: "exclamationmark.triangle")
+                    Label(PrivacyNotice.aiExport, systemImage: "doc.on.clipboard")
+                }
+                .font(.footnote)
+
+                Section("About Your Role") {
+                    TextField("Title (e.g. Intern, Research Assistant)", text: $title)
                     TextField("Organization", text: $organization)
                     TextField("Location", text: $location)
                 }

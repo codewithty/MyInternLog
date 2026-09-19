@@ -132,7 +132,7 @@ struct SearchView: View {
                 }
             }
             ContentUnavailableView(
-                "Search Your Internship",
+                "Search Your Log",
                 systemImage: "magnifyingglass",
                 description: Text("Find notes, study items, reflections, attachments, milestones, and career outputs.")
             )

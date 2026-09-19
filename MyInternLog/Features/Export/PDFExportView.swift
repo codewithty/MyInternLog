@@ -4,12 +4,7 @@ import SwiftData
 private enum PDFRange: String, CaseIterable {
     case today = "Today"
     case thisWeek = "This Week"
-    case all = "All Internship"
-}
-
-private struct IdentifiableURL: Identifiable {
-    let url: URL
-    var id: String { url.absoluteString }
+    case all = "All Time"
 }
 
 struct PDFExportView: View {
@@ -122,7 +117,7 @@ struct PDFExportView: View {
 
     private func generateAndShare() {
         isGenerating = true
-        let title = useGenericWording ? "Internship" : (profile.title.isEmpty ? "Internship Journal" : profile.title)
+        let title = useGenericWording ? "Work Journal" : (profile.title.isEmpty ? "Work Journal" : profile.title)
         let organization = useGenericWording ? "" : profile.organization
         let cover = PDFCoverInfo(
             reportTitle: range.rawValue + " Report",
