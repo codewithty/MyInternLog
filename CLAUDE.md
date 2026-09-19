@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MyInternLog** — an iPhone-first SwiftUI app that helps interns capture what they learn, review it later, generate weekly recaps, and create career-ready summaries. Built primarily for use during an AFRL internship, with fellow college interns as secondary users.
 
-**Success metric:** Use the app daily throughout AFRL and generate a detailed timeline of what was learned and accomplished.
+**Success metric (original):** Use the app daily throughout AFRL and generate a detailed timeline of what was learned and accomplished. The AFRL internship has ended, so the current goal is a beta with outside testers (see Current Milestone).
 
 ### MVP Features
 - Quick Notes
@@ -48,7 +48,7 @@ xcodebuild -project MyInternLog.xcodeproj -scheme MyInternLog -destination 'plat
 
 ## Current Milestone
 
-**No open gaps against docs/MVP.md. Next: manual device testing, then Version 2 ideas.**
+**No open functional gaps against docs/MVP.md. The "Visual And UX Direction" section (dark by default, subtle cosmic theme, semantic colors) is NOT built yet: the visual design pass is next, waiting on the user's direction. Also open: manual device testing, the app icon (waiting on artwork), and the distribution decision.**
 
 Completed (models): QuickNote, StudyItem, Reflection, ReflectionAnswer, AttachmentItem,
 DailyLog, InternshipProfile, Milestone, ReminderSetting, CareerOutput, Tag, KnowledgeItem,
@@ -163,7 +163,7 @@ Always prioritize:
 
 Small focused milestones
 Beginner-friendly code
-Features needed before AFRL starts
+Features real users need first
 Working software over architecture discussions
 One feature at a time
 Current Project Status
@@ -174,10 +174,11 @@ Project setup, GitHub setup, CLAUDE.md
 All models and features listed under "Current Milestone" above
 
 Current Goal:
-Build the smallest useful version of MyInternLog before AFRL begins on June 22. That
-goal has been substantially exceeded in scope — nearly every screen and feature in
-docs/MVP.md now exists and works. Remaining backlog is listed under "Current
-Milestone" above.
+Get MyInternLog ready for outside beta testers. The original goal (the smallest useful
+version before AFRL began on June 22) was met and far exceeded: every Version 1 feature
+in docs/MVP.md exists and works. What's left is listed under "Current Milestone" above:
+the visual design pass, the app icon, and how to distribute builds (TestFlight needs the
+paid Apple Developer Program, which is undecided).
 
 Current MVP Priority Order:
 
