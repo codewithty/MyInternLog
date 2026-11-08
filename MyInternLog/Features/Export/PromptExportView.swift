@@ -15,6 +15,8 @@ struct PromptExportView: View {
     @State private var prompt = ""
     @State private var pastedResult = ""
     @State private var copied = false
+    @State private var isGenerating = false
+    @State private var generationError: String?
 
     init(initialType: CareerOutputType = .dailySummary) {
         _outputType = State(initialValue: initialType)
@@ -88,6 +90,39 @@ struct PromptExportView: View {
                 }
 
                 Section {
+                    switch OnDeviceGenerator.status {
+                    case .available:
+                        Button {
+                            generateOnDevice()
+                        } label: {
+                            if isGenerating {
+                                HStack {
+                                    ProgressView()
+                                    Text("Generating...")
+                                }
+                            } else {
+                                Label("Generate on This iPhone", systemImage: "sparkles")
+                            }
+                        }
+                        .disabled(isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                        if let generationError {
+                            Text(generationError)
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                        }
+                    case .unavailable(let reason):
+                        Text(reason)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Private: Generate On-Device")
+                } footer: {
+                    Text("Runs on your iPhone with Apple Intelligence. Your notes never leave the phone. The result fills the box at the bottom, where you can edit it before saving.")
+                }
+
+                Section {
                     Text("Review this prompt for sensitive, confidential, or classified details before copying it anywhere.")
                         .font(.footnote)
                         .foregroundStyle(.orange)
@@ -149,6 +184,20 @@ struct PromptExportView: View {
             profile: profile,
             useGenericWording: profile.useGenericWordingByDefault
         )
+    }
+
+    private func generateOnDevice() {
+        isGenerating = true
+        generationError = nil
+        let promptToSend = prompt
+        Task {
+            do {
+                pastedResult = try await OnDeviceGenerator.generate(from: promptToSend)
+            } catch {
+                generationError = OnDeviceGenerator.message(for: error)
+            }
+            isGenerating = false
+        }
     }
 
     private func saveResult() {
