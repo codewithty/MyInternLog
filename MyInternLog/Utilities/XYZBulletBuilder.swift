@@ -51,7 +51,9 @@ enum XYZBulletBuilder {
         if !role.isEmpty {
             lines.append("Target role: \(role). Favor work that's relevant to it.")
         }
-        lines.append("Each note below is something I finished. If two notes describe the same work, combine them into one bullet.")
+        lines.append("Only write bullets for work that is already finished. Skip plans, future tasks, and meeting notes (anything with 'tomorrow', 'will', or 'I'll').")
+        lines.append("If two notes describe the same work, combine them into one bullet.")
+        lines.append("If a note is only a short title, write a short bullet. Don't add results or methods that aren't in the note.")
         lines.append("")
         lines.append("Notes:")
         for note in notes {
@@ -67,18 +69,55 @@ enum XYZBulletBuilder {
 
     // "Accomplished X, as measured by Y, by doing Z". Leaves out Y when there's
     // no number, rather than inventing one.
-    static func sentence(accomplishment: String, measure: String, method: String) -> String {
+    // sourceText is the notes the model was given. When it's provided, a result
+    // or method is only kept if its words actually appear in the notes, so
+    // filler like "finished the task" or a guessed method gets dropped.
+    static func sentence(accomplishment: String, measure: String, method: String, sourceText: String? = nil) -> String {
         let x = clean(accomplishment)
         let y = clean(measure)
         let z = clean(method)
 
+        // The on-device model sometimes writes the whole bullet into the
+        // accomplishment field. Skip any part it already included so the
+        // result and method don't appear twice.
+        let xLower = x.lowercased()
+        let methodHadBy = z.lowercased().hasPrefix("by ")
+        let zCore = methodHadBy ? String(z.dropFirst(3)) : z
+
+        let yIsGrounded = sourceText.map { isGrounded(y, in: $0) } ?? true
+        let zIsGrounded = sourceText.map { isGrounded(zCore, in: $0) } ?? true
+
         var result = x
-        if !y.isEmpty { result += ", \(y)" }
-        if !z.isEmpty {
-            let lower = z.lowercased()
-            result += lower.hasPrefix("by ") ? ", \(z)" : ", by \(lowercaseFirst(z))"
+        if !y.isEmpty && yIsGrounded && !xLower.contains(y.lowercased()) {
+            result += ", \(y)"
+        }
+        let alreadyHasMethod = xLower.contains(" by ") || xLower.contains(zCore.lowercased())
+        if !zCore.isEmpty && zIsGrounded && !alreadyHasMethod {
+            // "by" only reads right before an -ing verb ("by batching").
+            // If the model wrote a past-tense verb ("walked"), join with "and".
+            let firstWord = zCore.split(separator: " ").first.map { $0.lowercased() } ?? ""
+            if methodHadBy || firstWord.hasSuffix("ing") {
+                result += ", by \(lowercaseFirst(zCore))"
+            } else {
+                // Comma before "and" only when there are three parts.
+                let joiner = result == x ? " and" : ", and"
+                result += "\(joiner) \(lowercaseFirst(zCore))"
+            }
         }
         return result.isEmpty ? "" : result + "."
+    }
+
+    // True if most of the text's meaningful words appear in the source notes.
+    // Words are matched on their first 4 letters so "walking" matches "walked".
+    static func isGrounded(_ text: String, in source: String) -> Bool {
+        let sourceLower = source.lowercased()
+        let words = text.lowercased()
+            .split(whereSeparator: { !$0.isLetter && !$0.isNumber })
+            .map(String.init)
+            .filter { $0.count >= 4 || $0.contains(where: \.isNumber) }
+        guard !words.isEmpty else { return true }
+        let found = words.filter { sourceLower.contains(String($0.prefix(4))) }.count
+        return Double(found) / Double(words.count) >= 0.6
     }
 
     private static func clean(_ text: String) -> String {

@@ -83,8 +83,61 @@ final class XYZBulletBuilderTests: XCTestCase {
         XCTAssertEqual(s, "Cut upload time, by batching the requests.")
     }
 
+    // Real output from the first device test: the model put the whole bullet
+    // into the accomplishment field.
+    func testSentenceDoesNotRepeatPartsTheModelAlreadyWrote() {
+        let s = XYZBulletBuilder.sentence(
+            accomplishment: "Fixed a race in the test setup by adding a wait, resulting in the test passing 20 consecutive runs",
+            measure: "passing 20 consecutive runs",
+            method: "by adding a wait to the test setup"
+        )
+        XCTAssertEqual(s, "Fixed a race in the test setup by adding a wait, resulting in the test passing 20 consecutive runs.")
+    }
+
+    func testSentenceSkipsMethodAlreadyInAccomplishment() {
+        let s = XYZBulletBuilder.sentence(
+            accomplishment: "Set up the dev environment by installing the toolchain",
+            measure: "",
+            method: "by installing the toolchain"
+        )
+        XCTAssertEqual(s, "Set up the dev environment by installing the toolchain.")
+    }
+
+    // Real output from the second device test: "by walked the team".
+    func testSentenceUsesAndWhenMethodIsPastTense() {
+        let s = XYZBulletBuilder.sentence(
+            accomplishment: "Demoed the prototype",
+            measure: "received good feedback on error handling",
+            method: "walked the team through the pipeline"
+        )
+        XCTAssertEqual(s, "Demoed the prototype, received good feedback on error handling, and walked the team through the pipeline.")
+    }
+
+    // Real output from the third device test: filler and a guessed method
+    // that aren't in the note.
+    func testSentenceDropsResultAndMethodNotInTheNotes() {
+        let s = XYZBulletBuilder.sentence(
+            accomplishment: "Learned static analysis",
+            measure: "passed the course",
+            method: "by studying the material and completing the assignments",
+            sourceText: "Learned Static Analysis"
+        )
+        XCTAssertEqual(s, "Learned static analysis.")
+    }
+
+    // Real output from the demo data: results without numbers that ARE in the notes stay.
+    func testSentenceKeepsResultAndMethodFoundInTheNotes() {
+        let s = XYZBulletBuilder.sentence(
+            accomplishment: "Demoed the prototype",
+            measure: "received good feedback on error handling",
+            method: "by walking the team through the pipeline",
+            sourceText: "Demoed the prototype: Walked the team through the pipeline and got good feedback on error handling."
+        )
+        XCTAssertEqual(s, "Demoed the prototype, received good feedback on error handling, by walking the team through the pipeline.")
+    }
+
     func testSentenceKeepsAcronymsCapitalized() {
-        let s = XYZBulletBuilder.sentence(accomplishment: "Built a dashboard", measure: "", method: "API polling")
+        let s = XYZBulletBuilder.sentence(accomplishment: "Built a dashboard", measure: "", method: "by API polling")
         XCTAssertEqual(s, "Built a dashboard, by API polling.")
     }
 }
