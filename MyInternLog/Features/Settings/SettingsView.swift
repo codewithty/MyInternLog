@@ -42,7 +42,7 @@ struct SettingsView: View {
                 }
 
                 Section("Home Screen") {
-                    Toggle("Show week number", isOn: bindingFor(\.showWeekNumber))
+                    Toggle("Show internship week on Home", isOn: bindingFor(\.showWeekNumber))
                 }
 
                 Section {
