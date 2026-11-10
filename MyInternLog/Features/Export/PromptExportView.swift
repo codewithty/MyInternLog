@@ -119,7 +119,9 @@ struct PromptExportView: View {
                 } header: {
                     Text("Private: Generate On-Device")
                 } footer: {
-                    Text("Runs on your iPhone with Apple Intelligence. Your notes never leave the phone. The result fills the box at the bottom, where you can edit it before saving.")
+                    Text(outputType == .resumeBullet
+                         ? "Writes 3 to 5 bullets in XYZ format (accomplished X, as measured by Y, by doing Z) from your finished work. Questions, ideas, blockers, and study notes are skipped. Runs on your iPhone, so your notes never leave the phone."
+                         : "Runs on your iPhone with Apple Intelligence. Your notes never leave the phone. The result fills the box at the bottom, where you can edit it before saving.")
                 }
 
                 Section {
@@ -190,9 +192,17 @@ struct PromptExportView: View {
         isGenerating = true
         generationError = nil
         let promptToSend = prompt
+        let isResumeBullets = outputType == .resumeBullet
+        let notes = allNotes
+        let role = targetRole
         Task {
             do {
-                pastedResult = try await OnDeviceGenerator.generate(from: promptToSend)
+                if isResumeBullets {
+                    // Resume bullets get their own XYZ generator with guided generation.
+                    pastedResult = try await XYZBulletGenerator.generate(from: notes, targetRole: role)
+                } else {
+                    pastedResult = try await OnDeviceGenerator.generate(from: promptToSend)
+                }
             } catch {
                 generationError = OnDeviceGenerator.message(for: error)
             }

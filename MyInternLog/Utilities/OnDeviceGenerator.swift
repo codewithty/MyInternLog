@@ -39,6 +39,9 @@ enum OnDeviceGenerator {
 
     // Turns the framework's errors into something a user can act on.
     static func message(for error: Error) -> String {
+        if let issue = error as? XYZBulletGenerator.GenerationIssue {
+            return issue.errorDescription ?? "Couldn't generate bullets."
+        }
         if let generationError = error as? LanguageModelSession.GenerationError {
             switch generationError {
             case .exceededContextWindowSize:
