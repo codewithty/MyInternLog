@@ -1,141 +1,82 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
-import UniformTypeIdentifiers
 
+// Quick capture: tap + and start typing. The first line becomes the title and
+// the rest becomes the body. Only the things that matter in the moment are
+// here (a kind tag that the resume bullet generator uses, and photos).
+// Everything else (tags, skills, project group, highlight, files) is edited
+// later in QuickNoteDetailView.
 struct AddQuickNoteView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @Query(sort: \Tag.name) private var allTags: [Tag]
-    @Query(sort: \KnowledgeItem.name) private var allKnowledgeItems: [KnowledgeItem]
-    @Query(sort: \ProjectGroup.name) private var allGroups: [ProjectGroup]
-
-    @State private var title = ""
-    @State private var noteBody = ""
-    @State private var selectedTag: NoteTag = .general
-    @State private var highlightType: HighlightType?
+    @State private var text = ""
+    @State private var kind: NoteTag = .general
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var selectedImages: [UIImage] = []
-    @State private var pendingFiles: [(data: Data, ext: String, name: String)] = []
-    @State private var selectedTagNames: Set<String> = []
-    @State private var selectedSkillNames: Set<String> = []
-    @State private var selectedGroup: ProjectGroup?
     @State private var showingCamera = false
-    @State private var showingFileImporter = false
+    @FocusState private var isTyping: Bool
 
-    // Includes anything the user just typed via AddChipField, not only
-    // already-persisted Tags/KnowledgeItems, so a freshly-added chip shows
-    // up immediately instead of silently vanishing until the note is saved.
-    private var tagOptions: [String] {
-        Array(Set(Tag.starterSuggestions + allTags.map(\.name) + selectedTagNames)).sorted()
-    }
+    // The kinds worth one tap while capturing. They decide what the bullet
+    // generator keeps (wins) and skips (blockers, questions, ideas).
+    private let quickKinds: [NoteTag] = [.win, .blocker, .question, .idea]
 
-    private var skillOptions: [String] {
-        Array(Set(allKnowledgeItems.map(\.name) + selectedSkillNames)).sorted()
+    private var canSave: Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedImages.isEmpty
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("Title", text: $title)
-                TextField("Body (optional)", text: $noteBody, axis: .vertical)
-                    .lineLimit(5...)
-
-                Section {
-                    Picker("Tag", selection: $selectedTag) {
-                        ForEach(NoteTag.allCases, id: \.self) { tag in
-                            Text(tag.label).tag(tag)
-                        }
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text("What did you just do?")
+                            .font(.title3)
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
                     }
-                    Picker("Highlight", selection: $highlightType) {
-                        Text("None").tag(HighlightType?.none)
-                        ForEach(HighlightType.allCases, id: \.self) { type in
-                            Text(type.label).tag(HighlightType?.some(type))
-                        }
-                    }
+                    TextEditor(text: $text)
+                        .font(.title3)
+                        .focused($isTyping)
+                        .scrollContentBackground(.hidden)
                 }
+                .padding(.horizontal)
 
-                Section("Tags") {
-                    ChipFlowPicker(allOptions: tagOptions, selected: $selectedTagNames, chipColor: .blue)
-                    AddChipField(placeholder: "New tag") { newTag in
-                        selectedTagNames.insert(newTag.lowercased())
-                    }
-                }
-
-                Section("Skills / Tools / Concepts") {
-                    ChipFlowPicker(allOptions: skillOptions, selected: $selectedSkillNames, chipColor: .purple)
-                    AddChipField(placeholder: "New skill, tool, or concept") { newItem in
-                        selectedSkillNames.insert(newItem)
-                    }
-                }
-
-                Section("Project Group") {
-                    Picker("Group", selection: $selectedGroup) {
-                        Text("None").tag(ProjectGroup?.none)
-                        ForEach(allGroups.filter { !$0.isArchived }) { group in
-                            Text(group.name).tag(ProjectGroup?.some(group))
-                        }
-                    }
-                }
-
-                Section("Attachments") {
-                    PhotosPicker(
-                        selection: $selectedPhotos,
-                        maxSelectionCount: 10,
-                        matching: .images
-                    ) {
-                        Label("Add Photos", systemImage: "photo.badge.plus")
-                    }
-
-                    Button {
-                        showingCamera = true
-                    } label: {
-                        Label("Take Photo", systemImage: "camera")
-                    }
-
-                    Button {
-                        showingFileImporter = true
-                    } label: {
-                        Label("Add File", systemImage: "doc.badge.plus")
-                    }
-
-                    if !selectedImages.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(selectedImages.indices, id: \.self) { index in
-                                    Image(uiImage: selectedImages[index])
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 72, height: 72)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                }
+                if !selectedImages.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(selectedImages.indices, id: \.self) { index in
+                                Image(uiImage: selectedImages[index])
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 64, height: 64)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
-                            .padding(.vertical, 4)
                         }
+                        .padding(.horizontal)
                     }
-
-                    if !pendingFiles.isEmpty {
-                        ForEach(pendingFiles.indices, id: \.self) { index in
-                            Label(pendingFiles[index].name, systemImage: "doc.fill")
-                                .font(.caption)
-                        }
-                    }
+                    .padding(.bottom, 8)
                 }
+
+                captureBar
             }
-            .navigationTitle("New Note")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        saveNote()
-                    }
-                    .disabled(title.isEmpty)
+                    Button("Save") { saveNote() }
+                        .fontWeight(.semibold)
+                        .disabled(!canSave)
                 }
             }
+            // Keyboard is up the moment the sheet opens.
+            .task { isTyping = true }
             .onChange(of: selectedPhotos) { _, newItems in
                 Task {
                     var images: [UIImage] = []
@@ -154,45 +95,63 @@ struct AddQuickNoteView: View {
                 }
                 .ignoresSafeArea()
             }
-            .onAppear { ProjectGroup.ensureDefault(in: context) }
-            .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [.pdf], allowsMultipleSelection: true) { result in
-                if let urls = try? result.get() {
-                    for url in urls {
-                        guard url.startAccessingSecurityScopedResource() else { continue }
-                        defer { url.stopAccessingSecurityScopedResource() }
-                        if let data = try? Data(contentsOf: url) {
-                            pendingFiles.append((data: data, ext: url.pathExtension, name: url.lastPathComponent))
-                        }
-                    }
-                }
-            }
         }
     }
 
-    private func saveNote() {
-        let dailyLog = DailyLog.findOrCreate(for: Date(), in: context)
+    // One row above the keyboard: kind chips, then photo buttons.
+    private var captureBar: some View {
+        HStack(spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(quickKinds, id: \.self) { option in
+                        let isOn = kind == option
+                        Button {
+                            // Tap again to clear it back to a plain note.
+                            kind = isOn ? .general : option
+                        } label: {
+                            Text(option.label)
+                                .font(.subheadline.weight(.medium))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
+                                .background(isOn ? Color.accentColor : Color(.secondarySystemFill), in: Capsule())
+                                .foregroundStyle(isOn ? Color.white : Color.primary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
 
-        let note = QuickNote(title: title, body: noteBody, tag: selectedTag)
-        note.highlightType = highlightType
-        note.dailyLog = dailyLog
-        note.tags = selectedTagNames.map { Tag.findOrCreate(named: $0, in: context) }
-        note.knowledgeItems = selectedSkillNames.map { KnowledgeItem.findOrCreate(named: $0, category: .concept, in: context) }
-        if let selectedGroup {
-            note.projectGroups = [selectedGroup]
+            PhotosPicker(selection: $selectedPhotos, maxSelectionCount: 10, matching: .images) {
+                Image(systemName: "photo")
+                    .font(.title3)
+                    .frame(width: 36, height: 36)
+            }
+            Button {
+                showingCamera = true
+            } label: {
+                Image(systemName: "camera")
+                    .font(.title3)
+                    .frame(width: 36, height: 36)
+            }
         }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(.bar)
+    }
+
+    private func saveNote() {
+        let parts = QuickCaptureParser.split(text)
+        // A photo-only note still needs a title to show in lists.
+        let title = parts.title.isEmpty ? "Photo" : parts.title
+
+        let dailyLog = DailyLog.findOrCreate(for: Date(), in: context)
+        let note = QuickNote(title: title, body: parts.body, tag: kind)
+        note.dailyLog = dailyLog
         context.insert(note)
 
         for image in selectedImages {
             if let fileName = AttachmentStorage.save(image) {
                 let item = AttachmentItem(fileName: fileName, fileType: "image/jpeg", localPath: fileName)
-                item.dailyLog = dailyLog
-                context.insert(item)
-                note.attachments.append(item)
-            }
-        }
-        for file in pendingFiles {
-            if let fileName = AttachmentStorage.save(fileData: file.data, preferredExtension: file.ext) {
-                let item = AttachmentItem(fileName: file.name, fileType: "application/pdf", localPath: fileName)
                 item.dailyLog = dailyLog
                 context.insert(item)
                 note.attachments.append(item)
@@ -204,5 +163,5 @@ struct AddQuickNoteView: View {
 
 #Preview {
     AddQuickNoteView()
-        .modelContainer(for: [QuickNote.self, AttachmentItem.self, Tag.self, KnowledgeItem.self, ProjectGroup.self], inMemory: true)
+        .modelContainer(for: AppSchema.models, inMemory: true)
 }
